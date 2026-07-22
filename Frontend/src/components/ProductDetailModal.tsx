@@ -75,7 +75,7 @@ export default function ProductDetailModal({
         </button>
 
         {/* Left Side: Product Image Display & Specs/Tabs */}
-        <div className="md:col-span-6 bg-brand-card relative p-6 border-b md:border-b-0 md:border-r border-brand-border flex flex-col justify-between overflow-y-auto max-h-[45vh] md:max-h-[80vh]">
+        <div className="md:col-span-6 bg-brand-card relative p-6 border-b md:border-b-0 md:border-r border-brand-border flex flex-col justify-between overflow-y-visible md:overflow-y-auto max-h-none md:max-h-[80vh]">
           <div className="space-y-6">
             <div className="aspect-[4/5] w-full rounded overflow-hidden border border-brand-border bg-brand-bg relative">
               {product.image ? (
@@ -167,7 +167,7 @@ export default function ProductDetailModal({
         </div>
 
         {/* Right Side: Simple Luxury Product Meta & Purchase Configuration */}
-        <div className="md:col-span-6 p-8 flex flex-col justify-between overflow-y-auto max-h-[45vh] md:max-h-[80vh]" id="detail-panel-right">
+        <div className="md:col-span-6 p-8 flex flex-col justify-between overflow-y-visible md:overflow-y-auto max-h-none md:max-h-[80vh]" id="detail-panel-right">
           <div className="space-y-6 text-left my-auto">
             <div>
               {/* Category label */}

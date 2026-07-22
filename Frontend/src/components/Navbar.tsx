@@ -1,6 +1,6 @@
-import React from 'react';
-import { ShoppingBag, Heart, PlusCircle } from 'lucide-react';
-import { motion } from 'motion/react';
+import React, { useState } from 'react';
+import { ShoppingBag, Heart, PlusCircle, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
   currentTab: 'home' | 'marketplace' | 'sell' | 'checkout' | 'wishlist';
@@ -27,6 +27,8 @@ export default function Navbar({
   onOpenAuth,
   onLogout,
 }: NavbarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
@@ -111,7 +113,7 @@ export default function Navbar({
             {/* Wishlist Button - Mobile only */}
             <button
               onClick={onOpenWishlist}
-              className="md:hidden p-2 text-neutral-500 hover:text-brand-secondary transition-colors relative"
+              className="md:hidden p-2 text-neutral-500 hover:text-brand-secondary transition-colors relative animate-fade-in"
               aria-label="Wishlist"
               id="btn-wishlist-mobile"
             >
@@ -151,9 +153,100 @@ export default function Navbar({
             >
               <span>BAG ({cartCount})</span>
             </button>
+
+            {/* Hamburger Toggle - Mobile only */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 text-neutral-500 hover:text-brand-secondary transition-colors cursor-pointer"
+              aria-label="Toggle menu"
+              id="btn-navbar-toggle"
+            >
+              {isMobileMenuOpen ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="md:hidden border-t border-brand-border/20 bg-[#FFFEF2] overflow-hidden"
+            id="mobile-nav-menu"
+          >
+            <div className="px-4 py-4 space-y-2 flex flex-col text-left">
+              <button
+                onClick={() => {
+                  setCurrentTab('home');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`text-[10px] font-mono tracking-[0.2em] uppercase py-3 px-3 rounded-xs transition-all duration-200 text-left ${
+                  currentTab === 'home' 
+                    ? 'text-brand-secondary bg-brand-secondary/5 font-black border-l-2 border-brand-secondary' 
+                    : 'text-neutral-500 hover:text-brand-secondary hover:bg-brand-secondary/5'
+                }`}
+              >
+                HOMEPAGE
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentTab('marketplace');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`text-[10px] font-mono tracking-[0.2em] uppercase py-3 px-3 rounded-xs transition-all duration-200 text-left ${
+                  currentTab === 'marketplace' 
+                    ? 'text-brand-secondary bg-brand-secondary/5 font-black border-l-2 border-brand-secondary' 
+                    : 'text-neutral-500 hover:text-brand-secondary hover:bg-brand-secondary/5'
+                }`}
+              >
+                COLLECTION
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentTab('sell');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`text-[10px] font-mono tracking-[0.2em] uppercase py-3 px-3 rounded-xs transition-all duration-200 text-left ${
+                  currentTab === 'sell'
+                    ? 'text-brand-secondary bg-brand-secondary/5 font-black border-l-2 border-brand-secondary'
+                    : 'text-neutral-500 hover:text-brand-secondary hover:bg-brand-secondary/5'
+                }`}
+              >
+                SELL TIE
+              </button>
+              <button
+                onClick={() => {
+                  onOpenWishlist();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="text-[10px] font-mono tracking-[0.2em] uppercase py-3 px-3 rounded-xs transition-all duration-200 text-left flex items-center justify-between text-neutral-500 hover:text-brand-secondary hover:bg-brand-secondary/5"
+              >
+                <span>WISHLIST</span>
+                {wishlistCount > 0 && (
+                  <span className="bg-brand-secondary text-brand-bg text-[8px] font-mono rounded-full w-4.5 h-4.5 flex items-center justify-center font-bold">
+                    {wishlistCount}
+                  </span>
+                )}
+              </button>
+              {currentUser && (
+                <button
+                  onClick={() => {
+                    onOpenBecomeSeller();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="text-[10px] font-mono tracking-[0.2em] uppercase py-3 px-3 rounded-xs transition-all duration-200 text-left text-neutral-500 hover:text-brand-secondary hover:bg-brand-secondary/5"
+                >
+                  BECOME A SELLER
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 }

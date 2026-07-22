@@ -185,7 +185,7 @@ export default function LandingPage({
             </div>
 
             {/* SEVEN POLAROID CAROUSEL/COLLAGE (Asymmetric overlapping premium layout - Augmented Bigger Sizes) */}
-            <div className="flex flex-wrap md:flex-nowrap items-center justify-center gap-6 md:gap-0 max-w-7xl mx-auto pt-10 pb-16 relative" id="hero-polaroid-collage">
+            <div className="flex overflow-x-auto md:overflow-x-visible md:flex-nowrap items-center justify-start md:justify-center gap-6 md:gap-0 max-w-full md:max-w-7xl mx-auto pt-10 pb-16 relative scrollbar-none snap-x snap-mandatory px-6 md:px-0" id="hero-polaroid-collage">
               
               {/* Polaroid 1 (Extreme Left - Tilted Left) */}
               <motion.div 
@@ -194,7 +194,7 @@ export default function LandingPage({
                 style={{ y: yHeroRightSub }}
                 transition={{ duration: 0.8, delay: 0.05 }}
                 whileHover={{ rotate: -5, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3 pb-6 shadow-[0_12px_28px_rgba(0,0,0,0.22)] rounded-sm border border-black/5 w-[165px] sm:w-[195px] shrink-0 md:-mr-8 relative group transition-all duration-300 z-5 cursor-pointer"
+                className="bg-white p-3 pb-6 shadow-[0_12px_28px_rgba(0,0,0,0.22)] rounded-sm border border-black/5 w-[165px] sm:w-[195px] shrink-0 md:-mr-8 relative group transition-all duration-300 z-5 cursor-pointer snap-center"
               >
                 <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5 relative">
                   <img 
@@ -212,7 +212,7 @@ export default function LandingPage({
                 style={{ y: yHeroRightMain }}
                 transition={{ duration: 0.8, delay: 0.1 }}
                 whileHover={{ rotate: -2, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[185px] sm:w-[220px] shrink-0 md:-mr-6 relative group transition-all duration-300 z-10 cursor-pointer"
+                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[185px] sm:w-[220px] shrink-0 md:-mr-6 relative group transition-all duration-300 z-10 cursor-pointer snap-center"
               >
                 <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5 relative">
                   <img 
@@ -230,7 +230,7 @@ export default function LandingPage({
                 style={{ y: yHeroLeft }}
                 transition={{ duration: 0.8, delay: 0.15 }}
                 whileHover={{ rotate: 0, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[190px] sm:w-[230px] shrink-0 md:-mr-6 relative group transition-all duration-300 z-15 cursor-pointer"
+                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[190px] sm:w-[230px] shrink-0 md:-mr-6 relative group transition-all duration-300 z-15 cursor-pointer snap-center"
               >
                 <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5 relative">
                   <img 
@@ -248,7 +248,7 @@ export default function LandingPage({
                 style={{ y: yHeroRightMain }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 whileHover={{ scale: 1.08, zIndex: 30 }}
-                className="bg-white p-4 pb-9 shadow-[0_25px_50px_rgba(0,0,0,0.35)] rounded-sm border border-black/5 w-[215px] sm:w-[265px] shrink-0 z-20 relative group transition-all duration-300 transform md:scale-105 cursor-pointer"
+                className="bg-white p-4 pb-9 shadow-[0_25px_50px_rgba(0,0,0,0.35)] rounded-sm border border-black/5 w-[215px] sm:w-[265px] shrink-0 z-20 relative group transition-all duration-300 transform md:scale-105 cursor-pointer snap-center"
               >
                 <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5">
                   <img 
@@ -266,7 +266,7 @@ export default function LandingPage({
                 style={{ y: yHeroLeft }}
                 transition={{ duration: 0.8, delay: 0.25 }}
                 whileHover={{ rotate: 0, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[190px] sm:w-[230px] shrink-0 md:-mr-6 relative group transition-all duration-300 z-15 cursor-pointer"
+                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[190px] sm:w-[230px] shrink-0 md:-mr-6 relative group transition-all duration-300 z-15 cursor-pointer snap-center"
               >
                 <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5 relative">
                   <img 
@@ -284,7 +284,7 @@ export default function LandingPage({
                 style={{ y: yHeroRightMain }}
                 transition={{ duration: 0.8, delay: 0.3 }}
                 whileHover={{ rotate: 2, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[185px] sm:w-[220px] shrink-0 md:-mr-8 relative group transition-all duration-300 z-10 cursor-pointer"
+                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[185px] sm:w-[220px] shrink-0 md:-mr-8 relative group transition-all duration-300 z-10 cursor-pointer snap-center"
               >
                 {/* CSS Scotch Tape Representation */}
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-12 h-5 bg-neutral-200/45 backdrop-blur-[1.5px] border border-white/20 rotate-[-12deg] shadow-[0_1px_2px_rgba(0,0,0,0.05)] z-20" />
@@ -305,7 +305,7 @@ export default function LandingPage({
                 style={{ y: yHeroRightSub }}
                 transition={{ duration: 0.8, delay: 0.35 }}
                 whileHover={{ rotate: 5, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3 pb-6 shadow-[0_12px_28px_rgba(0,0,0,0.22)] rounded-sm border border-black/5 w-[165px] sm:w-[195px] shrink-0 relative group transition-all duration-300 z-5 cursor-pointer"
+                className="bg-white p-3 pb-6 shadow-[0_12px_28px_rgba(0,0,0,0.22)] rounded-sm border border-black/5 w-[165px] sm:w-[195px] shrink-0 relative group transition-all duration-300 z-5 cursor-pointer snap-center"
               >
                 <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5">
                   <img 
@@ -499,7 +499,7 @@ export default function LandingPage({
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8" 
+            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-8" 
             id="featured-grid"
           >
             {featuredProducts.slice(0, 10).map((product) => {
