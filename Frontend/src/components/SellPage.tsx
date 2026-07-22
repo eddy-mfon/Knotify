@@ -12,17 +12,17 @@ export default function SellPage() {
       >
         <h1 className="font-display font-light text-6xl sm:text-8xl md:text-9xl text-brand-primary tracking-tight leading-none select-none">
           COMING <br />
-          <span className="italic font-normal text-neutral-400">SOON</span>
+          <span className="italic font-normal text-brand-secondary">SOON</span>
         </h1>
         
         <p className="font-sans text-xs sm:text-sm md:text-base text-brand-secondary max-w-lg mx-auto leading-relaxed font-light">
-          We are finalizing direct peer-to-peer lobby handoff integrations in Covenant University hostels. Soon, you'll be able to clear your wardrobe of excess official neckwear, list them securely, and hand them down to junior students.
+          We are making it easy to sell your old ties to other students in the hostels. Soon, you can list your extra ties here and hand them over directly to students who need them.
         </p>
 
         <div className="pt-8 flex flex-col items-center gap-4">
           <div className="h-px w-16 bg-brand-primary/30" />
           <span className="font-mono text-[9px] tracking-[0.2em] text-brand-secondary uppercase">
-            Preserving the Sartorial Standard
+            Helping Students Dress Well
           </span>
         </div>
       </motion.div>

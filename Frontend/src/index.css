@@ -1,19 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Fraunces", serif;
-  --font-display: "Fraunces", serif;
-  --font-mono: "Fraunces", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", serif;
+  --font-mono: "JetBrains Mono", monospace;
   
-  --color-brand-bg: #040906;
-  --color-brand-card: #0A120E;
-  --color-brand-primary: #FFFFFF;
-  --color-brand-secondary: #8EB89B;
-  --color-brand-accent: #1B4D3E;
-  --color-brand-gold: #319762;
-  --color-brand-light-gray: #0D1913;
-  --color-brand-border: #14281E;
+  --color-brand-bg: #FFFEF2;
+  --color-brand-card: #F4F2E6;
+  --color-brand-primary: #1B1B19;
+  --color-brand-secondary: #1F3E2B;
+  --color-brand-accent: #2E5C3E;
+  --color-brand-gold: #11261B;
+  --color-brand-light-gray: #EBE8DA;
+  --color-brand-border: rgba(27, 27, 25, 0.15);
 }
 
 @layer base {

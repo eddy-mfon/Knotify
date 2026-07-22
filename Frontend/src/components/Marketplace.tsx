@@ -18,11 +18,11 @@ import TiePlaceholder from './TiePlaceholder';
 function SkeletonCard() {
   return (
     <div className="flex flex-col relative space-y-4 animate-pulse text-left" id="skeleton-card">
-      <div className="aspect-[3/4] w-full rounded-3xl bg-neutral-900/70 border border-brand-border/30 relative" />
+      <div className="aspect-[3/4] w-full rounded bg-brand-card border border-brand-border relative" />
       <div className="space-y-2 px-1">
-        <div className="h-4 bg-neutral-900/70 rounded w-5/6" />
-        <div className="h-3 bg-neutral-900/70 rounded w-1/3" />
-        <div className="h-3 bg-neutral-900/70 rounded w-1/2" />
+        <div className="h-4 bg-brand-card rounded w-5/6" />
+        <div className="h-3 bg-brand-card rounded w-1/3" />
+        <div className="h-3 bg-brand-card rounded w-1/2" />
       </div>
     </div>
   );
@@ -145,7 +145,7 @@ export default function Marketplace({
       {/* 1. ELEVATED TYPOGRAPHY HEADER (UGMONK-INSPIRED) */}
       <div className="text-center py-8 md:py-14 max-w-2xl mx-auto" id="marketplace-header">
         <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-brand-secondary block mb-2 select-none">
-          COVENANT TIE EXCHANGE
+          COVENANT TIE EXCHANGE • EST. 2026
         </span>
         <h1 className="font-display font-light text-4xl sm:text-5xl md:text-6xl text-brand-primary tracking-tight uppercase leading-tight select-none">
           THE CATALOG
@@ -188,7 +188,7 @@ export default function Marketplace({
               placeholder="SEARCH CATALOG..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent text-brand-primary text-[10px] font-mono tracking-widest uppercase border-b border-brand-border/30 focus:border-brand-primary focus:outline-none py-1.5 transition-all"
+              className="w-full bg-transparent text-brand-primary text-[10px] font-mono tracking-widest uppercase border-b border-brand-border focus:border-brand-secondary focus:outline-none py-1.5 transition-all"
               id="input-marketplace-search"
             />
             <span className="absolute right-0 top-1/2 -translate-y-1/2 text-brand-secondary pointer-events-none">
@@ -201,7 +201,7 @@ export default function Marketplace({
             {/* Filter Toggle */}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-brand-border/40 hover:border-brand-primary text-brand-primary text-[10px] font-mono tracking-widest uppercase transition-all cursor-pointer bg-neutral-950/30 hover:bg-neutral-800/80"
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-brand-border hover:border-brand-secondary hover:bg-brand-secondary hover:text-brand-bg text-brand-primary text-[10px] font-mono tracking-widest uppercase transition-all cursor-pointer bg-brand-card rounded"
             >
               <SlidersHorizontal size={10} />
               <span>FILTER</span>
@@ -212,7 +212,7 @@ export default function Marketplace({
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none bg-[#0A0A0A] text-brand-primary text-[10px] font-mono tracking-widest uppercase border-b border-transparent hover:border-brand-primary focus:border-brand-primary py-1.5 pl-1 pr-6 focus:outline-none cursor-pointer font-bold"
+                className="appearance-none bg-brand-bg text-brand-primary text-[10px] font-mono tracking-widest uppercase border-b border-brand-border hover:border-brand-secondary focus:border-brand-secondary py-1.5 pl-1 pr-6 focus:outline-none cursor-pointer font-bold"
                 id="select-sort"
               >
                 <option value="featured">RELEVANCE</option>
@@ -245,19 +245,19 @@ export default function Marketplace({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="bg-[#121212] border border-brand-border/30 rounded-3xl p-16 text-center max-w-md mx-auto my-12"
+              className="bg-brand-card border border-brand-border rounded p-12 text-center max-w-md mx-auto my-12"
               id="empty-state-card"
             >
-              <div className="w-12 h-12 bg-neutral-900 border border-brand-border/20 rounded-full flex items-center justify-center text-neutral-400 mx-auto mb-6">
+              <div className="w-12 h-12 bg-brand-bg border border-brand-border rounded flex items-center justify-center text-brand-secondary mx-auto mb-6">
                 <Search size={18} />
               </div>
               <h3 className="font-mono tracking-widest uppercase font-bold text-xs text-brand-primary">No ties match filters</h3>
-              <p className="text-xs text-brand-secondary mt-2 leading-relaxed font-sans font-light">
+              <p className="text-xs text-brand-primary/80 mt-2 leading-relaxed font-sans">
                 We couldn't find any ties matching your specific filters. Try widening your price, selecting another color, or resetting filters.
               </p>
               <button
                 onClick={handleResetFilters}
-                className="mt-6 px-6 py-2.5 bg-[#F5F2EB] hover:bg-white text-black font-mono text-[9px] tracking-widest uppercase rounded-full transition-colors cursor-pointer font-bold"
+                className="mt-6 px-6 py-2.5 bg-brand-primary hover:bg-brand-secondary text-brand-bg font-mono text-[9px] tracking-widest uppercase rounded transition-colors cursor-pointer font-bold"
                 id="btn-empty-state-reset"
               >
                 Reset Filter Options
@@ -284,7 +284,7 @@ export default function Marketplace({
                     id={`product-${product.id}`}
                   >
                     {/* Thumbnail Container (Flat Ugmonk Style, Pure Sharp Corners) */}
-                    <div className="aspect-[3/4] w-full rounded-3xl overflow-hidden bg-neutral-900 border border-brand-border/30 relative mb-4">
+                    <div className="aspect-[3/4] w-full rounded overflow-hidden bg-brand-card border border-brand-border relative mb-4">
                       {product.image ? (
                         <img
                           src={product.image}
@@ -304,17 +304,17 @@ export default function Marketplace({
                       {/* Clean Badges */}
                       <div className="absolute top-3 left-3 flex flex-col gap-1">
                         {isOutOfStock ? (
-                          <span className="bg-[#F5F2EB] text-black font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold rounded">
+                          <span className="bg-brand-primary text-brand-bg font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold rounded">
                             SOLD OUT
                           </span>
                         ) : discountPercent > 0 ? (
-                          <span className="bg-brand-primary text-black font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold rounded">
+                          <span className="bg-brand-secondary text-brand-bg font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold rounded">
                             -{discountPercent}%
                           </span>
                         ) : null}
 
                         {product.condition === 'Brand New' && !isOutOfStock && (
-                          <span className="bg-neutral-900 text-white font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold border border-brand-border/40 rounded">
+                          <span className="bg-brand-bg text-brand-primary font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold border border-brand-border rounded">
                             NEW
                           </span>
                         )}
@@ -326,13 +326,13 @@ export default function Marketplace({
                           e.stopPropagation();
                           onToggleWishlist(product, e);
                         }}
-                        className="absolute top-3 right-3 p-2 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full text-brand-primary hover:scale-105 transition-all duration-200 z-10"
+                        className="absolute top-3 right-3 p-2 bg-brand-bg/90 hover:bg-brand-secondary text-brand-secondary hover:text-brand-bg border border-brand-border rounded-full hover:scale-105 transition-all duration-200 z-10"
                         aria-label="Add to Wishlist"
                       >
                         <Heart 
                           size={11} 
                           strokeWidth={2}
-                          className={isWishlisted ? 'fill-brand-primary text-brand-primary' : 'text-neutral-400 hover:text-brand-primary'} 
+                          className={isWishlisted ? 'fill-brand-secondary text-brand-secondary' : 'text-brand-primary hover:text-brand-secondary'} 
                         />
                       </button>
 
@@ -344,7 +344,7 @@ export default function Marketplace({
                               e.stopPropagation();
                               onAddToCart(product, e);
                             }}
-                            className="w-full bg-[#F5F2EB] text-[#0A0A0A] text-[9px] font-mono tracking-widest py-3.5 hover:bg-white transition-colors uppercase font-bold"
+                            className="w-full bg-brand-secondary text-brand-bg text-[9px] font-mono tracking-widest py-3.5 hover:bg-brand-primary transition-colors uppercase font-bold cursor-pointer"
                           >
                             + ADD TO BAG
                           </button>
@@ -361,7 +361,7 @@ export default function Marketplace({
                       <div className="flex items-baseline gap-1.5 font-sans text-xs text-brand-secondary font-medium">
                         <span>₦{(product?.price ?? 0).toLocaleString()}</span>
                         {(product?.originalPrice ?? 0) > (product?.price ?? 0) && (
-                          <span className="font-mono text-[9px] text-brand-secondary/40 line-through">
+                          <span className="font-sans text-[9px] text-brand-secondary/40 line-through">
                             ₦{(product?.originalPrice ?? 0).toLocaleString()}
                           </span>
                         )}
@@ -406,14 +406,14 @@ export default function Marketplace({
                 <div className="flex h-full flex-col bg-brand-bg shadow-2xl overflow-hidden">
                   
                   {/* Drawer Header */}
-                  <div className="flex items-center justify-between border-b border-brand-border px-6 py-5 bg-[#121212]">
+                  <div className="flex items-center justify-between border-b border-brand-border px-6 py-5 bg-brand-card">
                     <div className="flex items-center gap-2">
                       <SlidersHorizontal size={14} className="text-brand-primary" />
                       <h2 className="text-sm font-mono tracking-widest uppercase font-bold text-brand-primary">FILTER & SORT</h2>
                     </div>
                     <button
                       onClick={() => setIsFilterOpen(false)}
-                      className="rounded-none p-1.5 text-brand-primary border border-brand-border hover:bg-neutral-900 transition-colors cursor-pointer"
+                      className="rounded p-1.5 text-brand-primary border border-brand-border hover:bg-brand-secondary hover:text-brand-bg transition-colors cursor-pointer"
                     >
                       <X size={15} />
                     </button>
@@ -448,10 +448,10 @@ export default function Marketplace({
                             />
                             <div className={`w-4 h-4 rounded-none border flex items-center justify-center transition-all duration-200 ${
                               selectedCondition === cond 
-                                ? 'border-brand-primary bg-brand-primary' 
-                                : 'border-brand-border bg-neutral-900 group-hover:border-brand-primary'
+                                ? 'border-brand-secondary bg-brand-secondary' 
+                                : 'border-brand-border bg-brand-bg group-hover:border-brand-secondary'
                             }`}>
-                              {selectedCondition === cond && <div className="w-1.5 h-1.5 bg-[#0A0A0A]" />}
+                              {selectedCondition === cond && <div className="w-1.5 h-1.5 bg-brand-bg" />}
                             </div>
                             <span className={selectedCondition === cond ? 'font-bold text-brand-primary font-mono tracking-wider text-[11px]' : 'text-brand-secondary text-xs'}>
                               {cond === 'All' ? 'ANY CONDITION' : cond.toUpperCase()}
@@ -474,7 +474,7 @@ export default function Marketplace({
                         step="500"
                         value={maxPrice}
                         onChange={(e) => setMaxPrice(Number(e.target.value))}
-                        className="w-full accent-brand-primary cursor-pointer bg-neutral-800 h-1 rounded-none"
+                        className="w-full accent-brand-secondary cursor-pointer bg-brand-border h-1 rounded-none"
                       />
                       <div className="flex justify-between text-[9px] font-mono text-brand-secondary/60 mt-2">
                         <span>₦1,000</span>
@@ -492,8 +492,8 @@ export default function Marketplace({
                             onClick={() => setSelectedColor(col)}
                             className={`px-3 py-1.5 rounded-none text-[10px] font-mono tracking-wider uppercase border transition-all duration-200 cursor-pointer ${
                               selectedColor === col
-                                ? 'bg-brand-primary text-[#0A0A0A] border-brand-primary font-bold'
-                                : 'bg-neutral-900 text-brand-secondary border-brand-border hover:border-brand-primary'
+                                ? 'bg-brand-secondary text-brand-bg border-brand-secondary font-bold'
+                                : 'bg-brand-bg text-brand-primary border-brand-border hover:border-brand-secondary'
                             }`}
                           >
                             {col === 'All' ? 'All' : col}
@@ -517,10 +517,10 @@ export default function Marketplace({
                             />
                             <div className={`w-4 h-4 rounded-none border flex items-center justify-center transition-all duration-200 ${
                               minRating === rating
-                                ? 'border-brand-primary bg-brand-primary'
-                                : 'border-brand-border bg-neutral-900 group-hover:border-brand-primary'
+                                ? 'border-brand-secondary bg-brand-secondary'
+                                : 'border-brand-border bg-brand-bg group-hover:border-brand-secondary'
                             }`}>
-                              {minRating === rating && <Check size={11} className="text-black" strokeWidth={3} />}
+                              {minRating === rating && <Check size={11} className="text-brand-bg" strokeWidth={3} />}
                             </div>
                             <span className={minRating === rating ? 'font-bold text-brand-primary font-mono tracking-wider text-[11px]' : 'text-brand-secondary text-xs'}>
                               {rating === 0 ? 'ANY RATING' : `${rating}★ & ABOVE`}
@@ -541,10 +541,10 @@ export default function Marketplace({
                         />
                         <div className={`w-4 h-4 rounded-none border flex items-center justify-center transition-all duration-200 ${
                           onlyInStock
-                            ? 'border-brand-primary bg-brand-primary'
-                            : 'border-brand-border bg-neutral-900 group-hover:border-brand-primary'
+                            ? 'border-brand-secondary bg-brand-secondary'
+                            : 'border-brand-border bg-brand-bg group-hover:border-brand-secondary'
                         }`}>
-                          {onlyInStock && <Check size={11} className="text-black" strokeWidth={3} />}
+                          {onlyInStock && <Check size={11} className="text-brand-bg" strokeWidth={3} />}
                         </div>
                         <span className={onlyInStock ? 'font-bold text-brand-primary font-mono tracking-wider text-[11px]' : 'text-brand-secondary text-xs'}>
                           HIDE OUT OF STOCK
@@ -555,10 +555,10 @@ export default function Marketplace({
                   </div>
 
                   {/* Drawer Footer */}
-                  <div className="border-t border-brand-border p-6 bg-[#121212] flex gap-4">
+                  <div className="border-t border-brand-border p-6 bg-brand-card flex gap-4">
                     <button
                       onClick={() => setIsFilterOpen(false)}
-                      className="flex-1 py-3 bg-[#F5F2EB] hover:bg-white text-black font-mono tracking-widest uppercase text-[10px] font-bold rounded-none transition-colors cursor-pointer text-center"
+                      className="flex-1 py-3 bg-brand-primary hover:bg-brand-secondary text-brand-bg font-mono tracking-widest uppercase text-[10px] font-bold rounded transition-colors cursor-pointer text-center"
                     >
                       APPLY FILTERS
                     </button>

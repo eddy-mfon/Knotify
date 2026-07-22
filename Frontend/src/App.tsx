@@ -6,8 +6,8 @@ import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
 import Marketplace from './components/Marketplace';
 import ProductDetailModal from './components/ProductDetailModal';
-import CartDrawer from './components/CartDrawer';
-import WishlistDrawer from './components/WishlistDrawer';
+import CheckoutPage from './components/CheckoutPage';
+import WishlistPage from './components/WishlistPage';
 import BecomeSellerModal from './components/BecomeSellerModal';
 import SellPage from './components/SellPage';
 import Footer from './components/Footer';
@@ -23,7 +23,7 @@ interface Toast {
 
 export default function App() {
   // Page routing state
-  const [currentTab, setCurrentTab] = useState<'home' | 'marketplace' | 'sell'>('home');
+  const [currentTab, setCurrentTab] = useState<'home' | 'marketplace' | 'sell' | 'checkout' | 'wishlist'>('home');
 
   // User Authentication State
   const [currentUser, setCurrentUser] = useState<any>(() => {
@@ -64,7 +64,7 @@ export default function App() {
       } else if (pendingAction.type === 'buy_now' && pendingAction.product) {
         executeDirectBuyNow(pendingAction.product);
       } else if (pendingAction.type === 'checkout') {
-        setIsCartOpen(true);
+        setCurrentTab('checkout');
       }
       setPendingAction(null);
     }
@@ -90,7 +90,7 @@ export default function App() {
 
   // Core database state (simulated local list)
   const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('knotify_products_v3');
+    const saved = localStorage.getItem('cu_marketplace_products_v3');
     return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
   });
 
@@ -131,13 +131,12 @@ export default function App() {
 
   // Modals overlay controls
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false);
 
   // Sync state with local storage
   useEffect(() => {
-    localStorage.setItem('knotify_products_v3', JSON.stringify(products));
+    localStorage.setItem('cu_marketplace_products_v3', JSON.stringify(products));
   }, [products]);
 
   useEffect(() => {
@@ -170,14 +169,14 @@ export default function App() {
       return [...prev, { product, quantity: Math.min(quantity, product.stock) }];
     });
     addToast(`"${product.name}" added to bag`, 'cart');
-    // Visual high-end trigger - slide open the cart immediately
-    setIsCartOpen(true);
+    // Visual high-end trigger - direct to full-page checkout immediately
+    setCurrentTab('checkout');
   };
 
   const executeDirectBuyNow = (product: Product) => {
     executeAddToCart(product, 1);
     setActiveProduct(null);
-    setIsCartOpen(true);
+    setCurrentTab('checkout');
   };
 
   // Handler functions
@@ -271,8 +270,8 @@ export default function App() {
         }}
         cartCount={cartCount}
         wishlistCount={wishlistCount}
-        onOpenCart={() => setIsCartOpen(true)}
-        onOpenWishlist={() => setIsWishlistOpen(true)}
+        onOpenCart={() => setCurrentTab('checkout')}
+        onOpenWishlist={() => setCurrentTab('wishlist')}
         onOpenBecomeSeller={() => setCurrentTab('sell')}
         currentUser={currentUser}
         onOpenAuth={() => {
@@ -330,7 +329,7 @@ export default function App() {
                 onCategoryChange={setSharedCategory}
               />
             </motion.div>
-          ) : (
+          ) : currentTab === 'sell' ? (
             /* SELL PAGE MODULE */
             <motion.div
               key="sell"
@@ -340,6 +339,49 @@ export default function App() {
               transition={{ duration: 0.3 }}
             >
               <SellPage onAddListing={handleAddListing} />
+            </motion.div>
+          ) : currentTab === 'wishlist' ? (
+            /* WISHLIST PAGE MODULE */
+            <motion.div
+              key="wishlist"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <WishlistPage
+                wishlist={wishlist}
+                products={products}
+                onToggleWishlist={handleToggleWishlist}
+                onAddToCart={(prod, qty) => {
+                  handleAddToCart(prod, qty);
+                  setCurrentTab('checkout');
+                }}
+                onBackToCollection={() => setCurrentTab('marketplace')}
+              />
+            </motion.div>
+          ) : (
+            /* CHECKOUT PAGE MODULE */
+            <motion.div
+              key="checkout"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <CheckoutPage
+                cartItems={cartItems}
+                onUpdateQuantity={handleUpdateCartQuantity}
+                onRemoveItem={handleRemoveCartItem}
+                onClearCart={() => setCartItems([])}
+                onAddReservation={handleAddReservation}
+                currentUser={currentUser}
+                onOpenAuth={() => {
+                  setPendingAction({ type: 'checkout' });
+                  setIsAuthOpen(true);
+                }}
+                onContinueShopping={() => setCurrentTab('marketplace')}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -380,44 +422,9 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* WISHLIST DRAWER (SLIDE-OVER) */}
-      <AnimatePresence>
-        {isWishlistOpen && (
-          <WishlistDrawer
-            isOpen={isWishlistOpen}
-            onClose={() => setIsWishlistOpen(false)}
-            wishlist={wishlist}
-            products={products}
-            onToggleWishlist={handleToggleWishlist}
-            onAddToCart={(prod, qty) => {
-              handleAddToCart(prod, qty);
-              setIsWishlistOpen(false);
-              setIsCartOpen(true);
-            }}
-          />
-        )}
-      </AnimatePresence>
 
-      {/* SLIDE-OVER SHOPPING CART DRAWER */}
-      <AnimatePresence>
-        {isCartOpen && (
-          <CartDrawer
-            isOpen={isCartOpen}
-            onClose={() => setIsCartOpen(false)}
-            cartItems={cartItems}
-            onUpdateQuantity={handleUpdateCartQuantity}
-            onRemoveItem={handleRemoveCartItem}
-            onClearCart={handleClearCart}
-            onAddReservation={handleAddReservation}
-            currentUser={currentUser}
-            onOpenAuth={() => {
-              setPendingAction({ type: 'checkout' });
-              setIsCartOpen(false);
-              setIsAuthOpen(true);
-            }}
-          />
-        )}
-      </AnimatePresence>
+
+      {/* (The cart slide-over drawer has been fully upgraded to the full-page CheckoutPage component) */}
 
       {/* SECURE IDENTITY PORTAL MODAL */}
       <AnimatePresence>
@@ -440,51 +447,67 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* TOAST NOTIFICATIONS STACK */}
-      <div className="fixed top-24 right-4 z-[9999] flex flex-col gap-3 pointer-events-none w-full max-w-xs sm:max-w-sm px-4" id="toast-notifications-container">
+      {/* TOAST NOTIFICATIONS STACK (APPLE-STYLE GREEN NOTIFICATION SYSTEM) */}
+      <div className="fixed top-24 right-4 z-[9999] flex flex-col gap-3.5 pointer-events-none w-full max-w-xs sm:max-w-sm px-4" id="toast-notifications-container">
         <AnimatePresence>
-          {toasts.map((toast) => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, x: 60, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 40, scale: 0.95, transition: { duration: 0.2 } }}
-              className="pointer-events-auto bg-neutral-950/95 backdrop-blur-md border border-brand-border/80 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-3.5"
-              id={`toast-${toast.id}`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="shrink-0">
-                  {toast.type === 'cart' ? (
-                    <div className="p-2 bg-brand-primary/10 text-brand-primary rounded-xl border border-brand-primary/20">
-                      <ShoppingBag size={14} className="text-brand-primary" />
+          {toasts.map((toast) => {
+            const isCart = toast.type === 'cart';
+            const isWishlist = toast.type === 'wishlist';
+
+            return (
+              <motion.div
+                key={toast.id}
+                initial={{ opacity: 0, x: 100, y: -15, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 80, scale: 0.9, transition: { duration: 0.25 } }}
+                className="relative pointer-events-auto bg-[#1F3E2B] border border-brand-accent/20 text-[#FFFEF2] rounded-xl p-3.5 pr-8 shadow-2xl overflow-hidden flex flex-col w-full"
+                id={`toast-${toast.id}`}
+              >
+                {/* Apple App Header Line */}
+                <div className="flex items-center justify-between border-b border-[#FFFEF2]/10 pb-1.5 mb-2 w-full">
+                  <div className="flex items-center gap-1.5">
+                    <div className="bg-[#FFFEF2] text-[#1F3E2B] w-4.5 h-4.5 flex items-center justify-center rounded-md font-serif text-xs font-bold shadow-sm select-none">
+                      †
                     </div>
-                  ) : toast.type === 'wishlist' ? (
-                    <div className="p-2 bg-red-500/10 text-red-400 rounded-xl border border-red-500/20">
-                      <Heart size={14} className="fill-red-400 text-red-400" />
-                    </div>
-                  ) : (
-                    <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
-                      <Check size={14} className="text-emerald-400" />
-                    </div>
-                  )}
+                    <span className="text-[9px] font-mono tracking-[0.25em] text-[#FFFEF2] font-black uppercase">
+                      KNOTIFY
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[#FFFEF2]/50 font-mono text-[8px] uppercase tracking-widest">
+                    <span>{isCart ? 'BAG' : isWishlist ? 'WISHLIST' : 'SYSTEM'}</span>
+                    <span>•</span>
+                    <span>now</span>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <p className="text-[11px] font-mono tracking-wider text-brand-secondary uppercase text-[9px] font-bold">
-                    {toast.type === 'cart' ? 'SHOPPING BAG' : toast.type === 'wishlist' ? 'WISHLIST' : 'SYSTEM UPDATE'}
-                  </p>
-                  <p className="text-xs font-sans text-white leading-tight font-medium mt-0.5">
+
+                {/* Notification Message */}
+                <div className="text-left w-full">
+                  <p className="text-xs font-sans text-white/95 leading-relaxed font-medium">
                     {toast.message}
                   </p>
                 </div>
-              </div>
-              <button
-                onClick={() => removeToast(toast.id)}
-                className="text-neutral-400 hover:text-white p-1 hover:bg-neutral-900 rounded-lg transition-colors cursor-pointer shrink-0"
-              >
-                <X size={12} />
-              </button>
-            </motion.div>
-          ))}
+
+                {/* Dismiss Button */}
+                <button
+                  onClick={() => removeToast(toast.id)}
+                  className="absolute top-2 right-2 text-[#FFFEF2]/50 hover:text-[#FFFEF2] p-1 hover:bg-white/10 rounded transition-colors cursor-pointer shrink-0"
+                  title="Dismiss alert"
+                >
+                  <X size={10} />
+                </button>
+
+                {/* Subtle Progress Bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/15 overflow-hidden">
+                  <motion.div
+                    initial={{ width: '100%' }}
+                    animate={{ width: '0%' }}
+                    transition={{ duration: 3.5, ease: 'linear' }}
+                    className="h-full bg-brand-bg/65"
+                  />
+                </div>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
 

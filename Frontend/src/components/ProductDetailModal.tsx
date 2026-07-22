@@ -2,15 +2,10 @@ import { useState } from 'react';
 import { 
   X, 
   ShoppingBag, 
-  ChevronRight, 
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle,
-  Truck,
-  HelpCircle,
-  Info
+  CheckCircle, 
+  Truck
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { Product } from '../types';
 import TiePlaceholder from './TiePlaceholder';
 
@@ -27,17 +22,13 @@ export default function ProductDetailModal({
   product,
   onClose,
   onAddToCart,
-  onToggleWishlist,
-  isInWishlist,
   onDirectBuy,
 }: ProductDetailModalProps) {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'info' | 'faqs'>('info');
 
-  const originalPrice = product?.originalPrice ?? 0;
   const price = product?.price ?? 0;
   const deposit = product?.deposit ?? 0;
-  const discountPercent = originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
   const outstandingBalance = price - deposit;
 
   const handleIncrement = () => {
@@ -71,22 +62,22 @@ export default function ProductDetailModal({
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="relative bg-brand-bg w-full max-w-4xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-brand-border/80 z-10 grid grid-cols-1 md:grid-cols-12 max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-hidden"
+        className="relative bg-brand-bg w-full max-w-4xl rounded overflow-hidden shadow-2xl border border-brand-border z-10 grid grid-cols-1 md:grid-cols-12 max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-hidden"
       >
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 z-20 p-2.5 bg-black/60 text-white rounded-full border border-brand-border/60 hover:bg-neutral-900 transition-colors cursor-pointer"
+          className="absolute top-5 right-5 z-20 p-2 text-brand-primary rounded border border-brand-border bg-brand-bg hover:bg-brand-secondary hover:text-brand-bg transition-colors cursor-pointer"
           aria-label="Close modal"
         >
           <X size={16} />
         </button>
 
-        {/* Left Side: Product Image Display & Specs/Tabs (Huge visual focus) */}
-        <div className="md:col-span-6 bg-neutral-950/40 relative p-6 border-b md:border-b-0 md:border-r border-brand-border/60 flex flex-col justify-between overflow-y-auto max-h-[45vh] md:max-h-[80vh]">
+        {/* Left Side: Product Image Display & Specs/Tabs */}
+        <div className="md:col-span-6 bg-brand-card relative p-6 border-b md:border-b-0 md:border-r border-brand-border flex flex-col justify-between overflow-y-auto max-h-[45vh] md:max-h-[80vh]">
           <div className="space-y-6">
-            <div className="aspect-[4/5] w-full rounded-2xl overflow-hidden border border-brand-border/50 bg-[#121212] relative">
+            <div className="aspect-[4/5] w-full rounded overflow-hidden border border-brand-border bg-brand-bg relative">
               {product.image ? (
                 <img
                   src={product.image}
@@ -105,18 +96,18 @@ export default function ProductDetailModal({
               )}
 
               {/* Premium Compliance Badge */}
-              <div className="absolute top-4 left-4 bg-[#1B4D3E] text-white font-mono text-[9px] tracking-widest uppercase px-3 py-1.5 font-bold rounded-xl shadow-lg border border-brand-border/20 flex items-center gap-1">
-                <CheckCircle size={10} className="text-[#8EB89B]" />
+              <div className="absolute top-4 left-4 bg-brand-bg text-brand-primary font-mono text-[9px] tracking-widest uppercase px-3 py-1.5 font-bold rounded shadow border border-brand-border flex items-center gap-1">
+                <CheckCircle size={10} className="text-brand-secondary" />
                 CHAPEL COMPLIANT
               </div>
             </div>
 
             {/* TAB SELECTORS: Pickup Info vs FAQs */}
-            <div className="flex border-b border-brand-border/40 text-xs font-mono tracking-widest uppercase">
+            <div className="flex border-b border-brand-border text-xs font-mono tracking-widest uppercase">
               <button
                 onClick={() => setActiveTab('info')}
                 className={`py-2 pr-4 border-b-2 cursor-pointer transition-colors ${
-                  activeTab === 'info' ? 'border-brand-primary text-brand-primary font-bold' : 'border-transparent text-neutral-500 hover:text-white'
+                  activeTab === 'info' ? 'border-brand-secondary text-brand-secondary font-bold' : 'border-transparent text-brand-primary/60 hover:text-brand-primary'
                 }`}
               >
                 Pickup Process
@@ -124,7 +115,7 @@ export default function ProductDetailModal({
               <button
                 onClick={() => setActiveTab('faqs')}
                 className={`py-2 px-4 border-b-2 cursor-pointer transition-colors ${
-                  activeTab === 'faqs' ? 'border-brand-primary text-brand-primary font-bold' : 'border-transparent text-neutral-500 hover:text-white'
+                  activeTab === 'faqs' ? 'border-brand-secondary text-brand-secondary font-bold' : 'border-transparent text-brand-primary/60 hover:text-brand-primary'
                 }`}
               >
                 FAQs
@@ -135,21 +126,21 @@ export default function ProductDetailModal({
             <div className="text-left">
               {activeTab === 'info' ? (
                 <div className="space-y-4" id="pickup-tab-content">
-                  <div className="flex gap-3 bg-neutral-900/60 p-4 rounded-2xl border border-brand-border/40">
-                    <Truck size={16} className="text-brand-primary shrink-0 mt-0.5" />
+                  <div className="flex gap-3 bg-brand-bg p-4 rounded border border-brand-border">
+                    <Truck size={16} className="text-brand-secondary shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-[10px] font-mono font-bold uppercase tracking-wider text-white">1. Secure Reservation</h4>
-                      <p className="text-[11px] text-brand-secondary mt-1 font-sans leading-relaxed">
+                      <h4 className="text-[10px] font-mono font-bold uppercase tracking-wider text-brand-primary">1. Secure Reservation</h4>
+                      <p className="text-[11px] text-brand-primary/80 mt-1 font-sans leading-relaxed">
                         Pay a safe deposit of ₦{(product?.deposit ?? 0).toLocaleString()} today. We handle ironed preparation, custom ziplock pouching, and stock assignment.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex gap-3 bg-neutral-900/60 p-4 rounded-2xl border border-brand-border/40">
-                    <CheckCircle size={16} className="text-brand-primary shrink-0 mt-0.5" />
+                  <div className="flex gap-3 bg-brand-bg p-4 rounded border border-brand-border">
+                    <CheckCircle size={16} className="text-brand-secondary shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-[10px] font-mono font-bold uppercase tracking-wider text-white">2. Hall Resumption Delivery</h4>
-                      <p className="text-[11px] text-brand-secondary mt-1 font-sans leading-relaxed">
+                      <h4 className="text-[10px] font-mono font-bold uppercase tracking-wider text-brand-primary">2. Hall Resumption Delivery</h4>
+                      <p className="text-[11px] text-brand-primary/80 mt-1 font-sans leading-relaxed">
                         Walk to your assigned pickup station near your Residence Hall. Verify your physical tie packaging before paying the outstanding balance.
                       </p>
                     </div>
@@ -157,17 +148,17 @@ export default function ProductDetailModal({
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1" id="faqs-tab-content">
-                  <div className="p-3 bg-neutral-900/40 rounded-xl border border-brand-border/30 text-left">
-                    <p className="text-[11px] font-mono text-brand-primary uppercase tracking-wider">Do I pay the full amount now?</p>
-                    <p className="text-xs text-brand-secondary font-sans mt-1">No, pay only the ₦{(product?.deposit ?? 0).toLocaleString()} reservation deposit to secure your tie. The remaining balance is paid upon resumption pickup.</p>
+                  <div className="p-3 bg-brand-bg rounded border border-brand-border text-left">
+                    <p className="text-[11px] font-mono text-brand-primary uppercase tracking-wider font-bold">Do I pay the full amount now?</p>
+                    <p className="text-xs text-brand-primary/80 font-sans mt-1">No, pay only the ₦{(product?.deposit ?? 0).toLocaleString()} reservation deposit to secure your tie. The remaining balance is paid upon resumption pickup.</p>
                   </div>
-                  <div className="p-3 bg-neutral-900/40 rounded-xl border border-brand-border/30 text-left">
-                    <p className="text-[11px] font-mono text-brand-primary uppercase tracking-wider">Where do I collect my order?</p>
-                    <p className="text-xs text-brand-secondary font-sans mt-1">We operate multiple stations close to the male/female halls during resumption week. You will receive an email/WhatsApp with your assigned coordinates.</p>
+                  <div className="p-3 bg-brand-bg rounded border border-brand-border text-left">
+                    <p className="text-[11px] font-mono text-brand-primary uppercase tracking-wider font-bold">Where do I collect my order?</p>
+                    <p className="text-xs text-brand-primary/80 font-sans mt-1">We operate multiple stations close to the male/female halls during resumption week. You will receive an email/WhatsApp with your assigned coordinates.</p>
                   </div>
-                  <div className="p-3 bg-neutral-900/40 rounded-xl border border-brand-border/30 text-left">
-                    <p className="text-[11px] font-mono text-brand-primary uppercase tracking-wider">Is this tie strictly chapel compliant?</p>
-                    <p className="text-xs text-brand-secondary font-sans mt-1">Yes, our plain ties meet all official Covenant University rules for Wednesday and Sunday Chapel services perfectly.</p>
+                  <div className="p-3 bg-brand-bg rounded border border-brand-border text-left">
+                    <p className="text-[11px] font-mono text-brand-primary uppercase tracking-wider font-bold">Is this tie strictly chapel compliant?</p>
+                    <p className="text-xs text-brand-primary/80 font-sans mt-1">Yes, our plain ties meet all official Covenant University rules for Wednesday and Sunday Chapel services perfectly.</p>
                   </div>
                 </div>
               )}
@@ -185,28 +176,28 @@ export default function ProductDetailModal({
               </span>
 
               {/* Product Title */}
-              <h2 className="font-display font-black text-2xl uppercase text-white leading-tight">
+              <h2 className="font-serif font-bold text-2xl uppercase text-brand-primary leading-tight">
                 {product.name}
               </h2>
             </div>
 
             {/* Material info */}
-            <div className="bg-neutral-900/40 p-4 rounded-2xl border border-brand-border/40">
-              <span className="text-[9px] font-mono text-brand-primary uppercase block tracking-widest mb-1 font-bold">
+            <div className="bg-brand-card p-4 rounded border border-brand-border">
+              <span className="text-[9px] font-mono text-brand-secondary uppercase block tracking-widest mb-1 font-bold">
                 Material Information
               </span>
-              <p className="text-[11px] text-brand-secondary leading-relaxed font-sans">
+              <p className="text-[11px] text-brand-primary/80 leading-relaxed font-sans">
                 {product.materials}
               </p>
             </div>
 
             {/* Pricing Details */}
-            <div className="pt-2 border-t border-brand-border/40 grid grid-cols-2 gap-4">
+            <div className="pt-2 border-t border-brand-border grid grid-cols-2 gap-4">
               <div>
                 <span className="text-[9px] font-mono text-brand-secondary uppercase block tracking-widest mb-1">
                   RESERVATION DEPOSIT
                 </span>
-                <span className="font-mono text-xl font-black text-white">
+                <span className="font-sans text-xl font-black text-brand-primary">
                   ₦{(product?.deposit ?? 0).toLocaleString()}
                 </span>
               </div>
@@ -214,38 +205,38 @@ export default function ProductDetailModal({
                 <span className="text-[9px] font-mono text-brand-secondary uppercase block tracking-widest mb-1">
                   OUTSTANDING BALANCE
                 </span>
-                <span className="font-mono text-xl font-semibold text-brand-secondary">
+                <span className="font-sans text-xl font-semibold text-brand-secondary">
                   ₦{(outstandingBalance ?? 0).toLocaleString()}
                 </span>
               </div>
             </div>
 
             {/* Total Price Tracker */}
-            <div className="bg-neutral-900/20 px-4 py-3 rounded-xl border border-brand-border/20 flex justify-between items-center">
-              <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-wider">Total Value</span>
-              <span className="text-xs font-mono font-bold text-neutral-300">₦{(product?.price ?? 0).toLocaleString()}</span>
+            <div className="bg-brand-card px-4 py-3 rounded border border-brand-border flex justify-between items-center">
+              <span className="text-[9px] font-mono text-brand-secondary uppercase tracking-wider">Total Value</span>
+              <span className="text-xs font-sans font-bold text-brand-primary">₦{(product?.price ?? 0).toLocaleString()}</span>
             </div>
 
             {/* Minimal Quantity Selector */}
-            <div className="flex items-center justify-between pt-4 border-t border-brand-border/40">
+            <div className="flex items-center justify-between pt-4 border-t border-brand-border">
               <span className="text-[10px] font-mono text-brand-secondary uppercase tracking-wider">
                 Quantity
               </span>
-              <div className="flex items-center border border-brand-border bg-neutral-900/60 py-1 px-3 rounded-full">
+              <div className="flex items-center border border-brand-border bg-brand-bg py-1 px-3 rounded">
                 <button
                   onClick={handleDecrement}
                   disabled={quantity <= 1}
-                  className="w-6 h-6 flex items-center justify-center font-mono text-sm text-white disabled:opacity-20 cursor-pointer"
+                  className="w-6 h-6 flex items-center justify-center font-sans text-sm text-brand-primary disabled:opacity-20 cursor-pointer"
                 >
                   -
                 </button>
-                <span className="w-10 text-center font-mono text-xs font-bold text-white">
+                <span className="w-10 text-center font-sans text-xs font-bold text-brand-primary">
                   {quantity}
                 </span>
                 <button
                   onClick={handleIncrement}
                   disabled={quantity >= product.stock}
-                  className="w-6 h-6 flex items-center justify-center font-mono text-sm text-white disabled:opacity-20 cursor-pointer"
+                  className="w-6 h-6 flex items-center justify-center font-sans text-sm text-brand-primary disabled:opacity-20 cursor-pointer"
                 >
                   +
                 </button>
@@ -254,10 +245,10 @@ export default function ProductDetailModal({
           </div>
 
           {/* Quick Action Purchase Buttons */}
-          <div className="space-y-3 pt-6 border-t border-brand-border/40 mt-6">
+          <div className="space-y-3 pt-6 border-t border-brand-border mt-6">
             <button
               onClick={handleAddToCartAndClose}
-              className="w-full py-4 bg-transparent hover:bg-neutral-900 text-white border border-brand-border/80 font-mono tracking-widest uppercase text-xs rounded-full transition-all flex items-center justify-center gap-2 cursor-pointer font-bold"
+              className="w-full py-4 bg-brand-bg hover:bg-brand-card text-brand-primary border border-brand-border font-mono tracking-widest uppercase text-xs rounded transition-all flex items-center justify-center gap-2 cursor-pointer font-bold"
               id="btn-modal-add-cart"
             >
               <ShoppingBag size={14} />
@@ -269,7 +260,7 @@ export default function ProductDetailModal({
                 onDirectBuy(product);
                 onClose();
               }}
-              className="w-full py-4 bg-white hover:bg-[#F5F2EB] text-neutral-950 font-mono tracking-widest uppercase text-xs rounded-full transition-all flex items-center justify-center gap-1 cursor-pointer font-black shadow-lg"
+              className="w-full py-4 bg-brand-primary hover:bg-brand-secondary text-brand-bg font-mono tracking-widest uppercase text-xs rounded transition-all flex items-center justify-center gap-1 cursor-pointer font-black shadow"
               id="btn-modal-buy-now"
             >
               RESERVE NOW
