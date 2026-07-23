@@ -3,3 +3,4 @@ sqlalchemy
 fastapi
 supabase
 typing
+uvicorn
