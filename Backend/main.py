@@ -1,6 +1,3 @@
-from doctest import debug
-
-from django.views.generic import detail
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
