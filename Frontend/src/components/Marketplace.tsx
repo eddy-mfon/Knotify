@@ -126,7 +126,7 @@ export default function Marketplace({
         const matchesColor = selectedColor === 'All' || product.color === selectedColor;
         const matchesPrice = (product.price ?? product.originalPrice) <= maxPrice;
         const matchesRating = product.rating >= minRating;
-        const matchesStock = !onlyInStock || product.stock > 0;
+        const matchesStock = !onlyInStock || Number(product.stock) > 0;
 
         return matchesSearch && matchesCategory && matchesCondition && matchesColor && matchesPrice && matchesRating && matchesStock;
       })
@@ -262,17 +262,17 @@ export default function Marketplace({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
                     key={product.id}
-                    className={`bg-transparent border-0 rounded-none p-0 flex flex-col relative group transition-all duration-300 text-left ${isOutOfStock ? 'opacity-40 blur-[1px] cursor-not-allowed pointer-events-none' : 'cursor-pointer'}`}
-                    onClick={() => !isOutOfStock && onOpenProductDetail(product)}
+                    className="bg-transparent border-0 rounded-none p-0 flex flex-col relative group transition-all duration-300 text-left cursor-pointer"
+                    onClick={() => onOpenProductDetail(product)}
                     id={`product-${product.id}`}
                   >
-                    {/* Thumbnail Container (Flat Ugmonk Style, Pure Sharp Corners) */}
+                    {/* Thumbnail Container */}
                     <div className="aspect-[3/4] w-full rounded overflow-hidden bg-brand-card border border-brand-border relative mb-4">
                       {product.image ? (
                         <img
                           src={product.image}
                           alt={product.name}
-                          className={`w-full h-full object-cover grayscale-[8%] group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-700 ${isOutOfStock ? 'opacity-40 grayscale' : ''}`}
+                          className="w-full h-full object-cover grayscale-[5%] group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-700"
                           referrerPolicy="no-referrer"
                         />
                       ) : (
@@ -286,19 +286,13 @@ export default function Marketplace({
 
                       {/* Clean Badges */}
                       <div className="absolute top-3 left-3 flex flex-col gap-1">
-                        {isOutOfStock ? (
-                          <span className="bg-brand-primary text-brand-bg font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold rounded">
-                            OUT OF STOCK
-                          </span>
-                        ) : discountPercent > 0 ? (
+                        {product.condition === 'Brand New' ? (
                           <span className="bg-brand-secondary text-brand-bg font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold rounded">
-                            -{discountPercent}%
+                            SIGNATURE
                           </span>
-                        ) : null}
-
-                        {product.condition === 'Brand New' && !isOutOfStock && (
+                        ) : (
                           <span className="bg-brand-bg text-brand-primary font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold border border-brand-border rounded">
-                            NEW
+                            EXHIBITION
                           </span>
                         )}
                       </div>
@@ -319,39 +313,32 @@ export default function Marketplace({
                         />
                       </button>
 
-                      {/* Subtle Slide-up Add to Bag on Hover */}
-                      {!isOutOfStock && (
-                        <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAddToCart(product, e);
-                            }}
-                            className="w-full bg-brand-secondary text-brand-bg text-[9px] font-mono tracking-widest py-3.5 hover:bg-brand-primary transition-colors uppercase font-bold cursor-pointer"
-                          >
-                            + ADD TO BAG
-                          </button>
-                        </div>
-                      )}
+                      {/* Subtle Slide-up Inspect Details on Hover */}
+                      <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenProductDetail(product);
+                          }}
+                          className="w-full bg-brand-secondary text-brand-bg text-[9px] font-mono tracking-widest py-3.5 hover:bg-brand-primary transition-colors uppercase font-bold cursor-pointer"
+                        >
+                          INSPECT DETAILS
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Info Panel - Absolute Ugmonk Minimalism */}
+                    {/* Info Panel - Display Format without Prices */}
                     <div className="space-y-1">
-                      <h3 className="font-sans font-normal text-[13px] text-brand-primary tracking-normal leading-snug group-hover:text-brand-secondary transition-colors line-clamp-1">
+                      <h3 className="font-sans font-medium text-[13px] text-brand-primary tracking-normal leading-snug group-hover:text-brand-secondary transition-colors line-clamp-1">
                         {product.name}
                       </h3>
 
-                      <div className="flex items-baseline justify-between font-sans text-xs text-brand-secondary font-medium">
-                        <div className="flex items-baseline gap-1.5">
-                          <span>₦{(product?.price ?? 0).toLocaleString()}</span>
-                          {(product?.originalPrice ?? 0) > (product?.price ?? 0) && (
-                            <span className="font-sans text-[9px] text-brand-secondary/40 line-through">
-                              ₦{(product?.originalPrice ?? 0).toLocaleString()}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[9px] font-mono text-brand-secondary/65">
-                          {product.stock} in stock
+                      <div className="flex items-center justify-between font-mono text-[10px] text-brand-secondary/80">
+                        <span className="uppercase tracking-wider font-semibold">
+                          {product.color} &bull; {product.category}
+                        </span>
+                        <span className="text-[9px] text-brand-secondary/60">
+                          {product.condition}
                         </span>
                       </div>
                     </div>

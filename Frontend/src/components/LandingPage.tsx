@@ -1,34 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
-  Heart, 
-  ArrowRight,
-  Shield,
+  ArrowRight, 
+  ShoppingBag,
   Sparkles,
-  Users,
-  Award,
   ChevronRight,
-  Bookmark,
-  MessageCircle,
-  Send,
-  Check,
-  AlertTriangle,
-  BookOpen,
-  HelpCircle,
-  Clock,
-  CheckCircle2,
-  Calendar,
-  AlertCircle,
-  Search,
-  MapPin,
-  FileCheck,
-  CheckCircle,
-  Loader
+  Heart,
 } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
-import { Product, Reservation } from './Frontend/src/types';
+import { motion } from 'motion/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Flip } from 'gsap/Flip';
+import Lenis from '@studio-freight/lenis';
+import { Product } from '../types';
 import TiePlaceholder from './TiePlaceholder';
 import FAQSection from './FAQSection';
-import AboutSection from './AboutSection';
+
+gsap.registerPlugin(ScrollTrigger, Flip);
 
 interface LandingPageProps {
   onBrowseMarketplace: () => void;
@@ -55,691 +42,976 @@ export default function LandingPage({
   onToggleWishlist,
   onAddToCart,
   isInWishlist,
-  inventorySummary,
 }: LandingPageProps) {
 
-  // Custom container transition variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15
+  // GSAP Animation Refs
+  const heroLeftRef = useRef<HTMLDivElement>(null);
+  const heroRightRef = useRef<HTMLDivElement>(null);
+  const heroLogoRef = useRef<HTMLHeadingElement>(null);
+  const heroTaglineRef = useRef<HTMLDivElement>(null);
+  const mosaicGridRef = useRef<HTMLDivElement>(null);
+
+  // Section 02 - Nobody tells you which tie to wear
+  const problemSectionRef = useRef<HTMLDivElement>(null);
+  const problemHeadlineRef = useRef<HTMLHeadingElement>(null);
+  const problemLinesRef = useRef<HTMLDivElement>(null);
+
+  // Section 03 - What happens if you don't sort your tie before resumption
+  const riskSectionRef = useRef<HTMLDivElement>(null);
+  const riskHeadlineRef = useRef<HTMLHeadingElement>(null);
+  const riskLinesRef = useRef<HTMLDivElement>(null);
+
+  // Section 04 - Solution category cards & Flip container
+  const solutionSectionRef = useRef<HTMLDivElement>(null);
+  const categoryGridRef = useRef<HTMLDivElement>(null);
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<'All' | 'Classic' | 'Essential' | 'Statement'>('All');
+
+  // Section 05 - How We Operate
+  const operateSectionRef = useRef<HTMLDivElement>(null);
+  const operateStepsRef = useRef<HTMLDivElement>(null);
+
+  // Section 07 - CTA poster
+  const ctaSectionRef = useRef<HTMLDivElement>(null);
+  const ctaContentRef = useRef<HTMLDivElement>(null);
+
+  // Model & Tie imagery mix for Hero Mosaic Grid
+  const mosaicCards = [
+    { type: 'model', src: '/models/model1.jpg', alt: 'Covenant Fresher Style', label: 'CHAPEL LOOK' },
+    { type: 'product', item: products[0] || null, defaultName: 'Plain Black Tie', defaultColor: '#1B1B19' },
+    { type: 'model', src: '/models/model2.jpg', alt: 'Student Neckwear Fashion', label: 'ELEGANCE' },
+    { type: 'product', item: products[1] || null, defaultName: 'Wine Chapel Tie', defaultColor: '#1F3E2B' },
+    { type: 'model', src: '/models/model3.jpg', alt: 'Sunday Service Ready', label: 'VERIFIED' },
+    { type: 'product', item: products[2] || null, defaultName: 'Navy Stripe Tie', defaultColor: '#2E5C3E' },
+  ];
+
+  const classicTie = products.find(p => p.category?.toLowerCase().includes('classic') || p.name.toLowerCase().includes('plain black')) || products[0];
+  const essentialTie = products.find(p => p.category?.toLowerCase().includes('essential') || p.name.toLowerCase().includes('navy') || p.name.toLowerCase().includes('wine')) || products[1] || products[0];
+  const statementTie = products.find(p => p.category?.toLowerCase().includes('statement') || p.name.toLowerCase().includes('stripe') || p.name.toLowerCase().includes('pattern')) || products[2] || products[0];
+
+  const categoryCards = [
+    {
+      id: 'classic',
+      tag: '01 / THE CLASSIC',
+      badge: 'CHAPEL COMPLIANT',
+      badgeBg: 'bg-brand-secondary',
+      title: 'Clean. Sharp. Always works.',
+      desc: 'For the gentleman who wants to command respect without overthinking it. Plain black, deep navy, or rich wine.',
+      vibe: 'Chapel & Formal Standard',
+      category: 'Classic',
+      filterType: 'Plain',
+      product: classicTie,
+      color: '#1B1B19',
+      borderHighlight: false,
+    },
+    {
+      id: 'essential',
+      tag: '02 / THE ESSENTIAL',
+      badge: 'POPULAR CHOICE',
+      badgeBg: 'bg-brand-secondary',
+      title: 'Your daily signature neckwear.',
+      desc: 'Start here if you want effortless poise. Structured weave, pre-ironed drape, and verified knot stability.',
+      vibe: 'Everyday Presentation',
+      category: 'Essential',
+      filterType: 'Essential',
+      product: essentialTie,
+      color: '#1F3E2B',
+      borderHighlight: true,
+    },
+    {
+      id: 'statement',
+      tag: '03 / THE STATEMENT',
+      badge: 'DISTINCTIVE',
+      badgeBg: 'bg-brand-primary',
+      title: "For when basic isn't your language.",
+      desc: 'Subtle textures, micro-stripes, and jacquard weaves for when you take the stage, lectern, or board room.',
+      vibe: 'Executive & Gala',
+      category: 'Statement',
+      filterType: 'Patterned',
+      product: statementTie,
+      color: '#2E5C3E',
+      borderHighlight: false,
+    },
+  ];
+
+  const filteredCards = categoryCards.filter(c => {
+    if (activeCategoryFilter === 'All') return true;
+    return c.category === activeCategoryFilter;
+  });
+
+  const handleCategoryFilterChange = (filter: 'All' | 'Classic' | 'Essential' | 'Statement') => {
+    if (!categoryGridRef.current || filter === activeCategoryFilter) return;
+    const state = Flip.getState(categoryGridRef.current.children);
+    setActiveCategoryFilter(filter);
+    requestAnimationFrame(() => {
+      Flip.from(state, {
+        duration: 0.5,
+        ease: 'power3.inOut',
+        stagger: 0.06,
+        absolute: true,
+        onComplete: () => ScrollTrigger.refresh(),
+      });
+    });
+  };
+
+  useEffect(() => {
+    // 1. Lenis Smooth Scrolling integrated with GSAP ScrollTrigger
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      smoothWheel: true,
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    const tickerCb = (time: number) => {
+      lenis.raf(time * 1000);
+    };
+    gsap.ticker.add(tickerCb);
+    gsap.ticker.lagSmoothing(0);
+
+    const ctx = gsap.context(() => {
+      // 2. ULTRA-IMMERSIVE CINEMATIC HERO GSAP REVEAL SEQUENCE
+      const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+
+      // Ambient background glow in hero
+      heroTl.fromTo(
+        '#hero-ambient-glow',
+        { opacity: 0, scale: 0.8 },
+        { opacity: 0.6, scale: 1, duration: 1.6, ease: 'power2.out' },
+        0
+      );
+
+      // Left panel subtle entrance
+      if (heroLeftRef.current) {
+        heroTl.fromTo(
+          heroLeftRef.current,
+          { opacity: 0, x: -24 },
+          { opacity: 1, x: 0, duration: 0.8 },
+          0.1
+        );
       }
-    }
-  };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { type: 'spring', stiffness: 80 }
-    }
-  };
+      // Pre-title status pill
+      heroTl.fromTo(
+        '#hero-pill-badge',
+        { opacity: 0, y: -16, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'back.out(1.7)' },
+        0.2
+      );
 
-  const heroLeftContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.12,
-        delayChildren: 0.1
+      // Main Brand Title - Split character reveal
+      const logoLetters = document.querySelectorAll('.hero-logo-char');
+      if (logoLetters.length > 0) {
+        heroTl.fromTo(
+          logoLetters,
+          { opacity: 0, y: 50, rotateX: -60, filter: 'blur(8px)' },
+          { 
+            opacity: 1, 
+            y: 0, 
+            rotateX: 0, 
+            filter: 'blur(0px)', 
+            duration: 1.1, 
+            stagger: 0.045, 
+            ease: 'expo.out' 
+          },
+          0.3
+        );
+      } else if (heroLogoRef.current) {
+        heroTl.fromTo(
+          heroLogoRef.current,
+          { opacity: 0, y: 40, scale: 0.94, filter: 'blur(6px)' },
+          { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 1.0, ease: 'power4.out' },
+          0.3
+        );
       }
-    }
-  };
 
-  const heroLeftItem = {
-    hidden: { opacity: 0, x: -25 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { type: 'spring', stiffness: 70, damping: 14 }
-    }
-  };
-
-  const bentoContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.15
+      // Tagline italic hook & description text
+      if (heroTaglineRef.current) {
+        heroTl.fromTo(
+          heroTaglineRef.current.children,
+          { opacity: 0, y: 22, filter: 'blur(4px)' },
+          { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.8, stagger: 0.12, ease: 'power3.out' },
+          0.65
+        );
       }
-    }
-  };
 
-  const bentoItem = {
-    hidden: { opacity: 0, scale: 0.94, y: 25 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: { type: 'spring', stiffness: 65, damping: 14 }
-    }
-  };
+      // Hero editorial meta bar (footer)
+      heroTl.fromTo(
+        '#hero-meta-bar',
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' },
+        0.85
+      );
 
-  // Parallax scroll effects
-  const { scrollY } = useScroll();
-  
-  // Elements move at different rates to create high-end modern depth
-  const yKnotifyBg = useTransform(scrollY, [0, 800], [0, 100]);
-  const yHeroLeft = useTransform(scrollY, [0, 800], [0, -40]);
-  const yHeroRightMain = useTransform(scrollY, [0, 800], [0, -20]);
-  const yHeroRightSub = useTransform(scrollY, [0, 800], [0, 30]);
-  const yHeroPattern = useTransform(scrollY, [0, 800], [0, 60]);
-  
-  // Floating parallax ambient backgrounds
-  const yGlow1 = useTransform(scrollY, [0, 1200], [0, 120]);
-  const yGlow2 = useTransform(scrollY, [0, 1800], [0, -150]);
+      // Mosaic visual cards stagger with 3D scale and tilt
+      if (mosaicGridRef.current) {
+        heroTl.fromTo(
+          mosaicGridRef.current.querySelectorAll('.mosaic-item'),
+          { opacity: 0, scale: 0.88, y: 35, rotateY: 10, filter: 'blur(4px)' },
+          { 
+            opacity: 1, 
+            scale: 1, 
+            y: 0, 
+            rotateY: 0, 
+            filter: 'blur(0px)', 
+            duration: 1.0, 
+            stagger: 0.08, 
+            ease: 'power3.out' 
+          },
+          0.5
+        );
+      }
 
+      // 3. SECTION 02: "Nobody tells you which tie to wear" - SplitText words reveal + Scrub
+      if (problemHeadlineRef.current) {
+        const headlineWords = problemHeadlineRef.current.querySelectorAll('.split-word');
+        if (headlineWords.length > 0) {
+          gsap.fromTo(
+            headlineWords,
+            { opacity: 0.15, y: 20 },
+            {
+              opacity: 1,
+              y: 0,
+              stagger: 0.06,
+              duration: 0.8,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: problemHeadlineRef.current,
+                start: 'top 82%',
+                end: 'top 50%',
+                scrub: 0.6,
+              },
+            }
+          );
+        }
+      }
 
+      if (problemLinesRef.current) {
+        gsap.fromTo(
+          problemLinesRef.current.children,
+          { opacity: 0.12, y: 26, filter: 'blur(3px)' },
+          {
+            opacity: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            stagger: 0.18,
+            duration: 0.8,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: problemLinesRef.current,
+              start: 'top 78%',
+              end: 'bottom 55%',
+              scrub: 0.8,
+            },
+          }
+        );
+      }
+
+      // 4. SECTION 03: "What happens if you don't sort your tie before resumption?" - SplitText words + Scrub
+      if (riskHeadlineRef.current) {
+        const riskWords = riskHeadlineRef.current.querySelectorAll('.split-word');
+        if (riskWords.length > 0) {
+          gsap.fromTo(
+            riskWords,
+            { opacity: 0.15, y: 20 },
+            {
+              opacity: 1,
+              y: 0,
+              stagger: 0.05,
+              duration: 0.8,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: riskHeadlineRef.current,
+                start: 'top 82%',
+                end: 'top 48%',
+                scrub: 0.6,
+              },
+            }
+          );
+        }
+      }
+
+      if (riskLinesRef.current) {
+        gsap.fromTo(
+          riskLinesRef.current.children,
+          { opacity: 0.1, y: 28, filter: 'blur(3px)' },
+          {
+            opacity: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            stagger: 0.16,
+            duration: 0.85,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: riskLinesRef.current,
+              start: 'top 75%',
+              end: 'bottom 50%',
+              scrub: 0.8,
+            },
+          }
+        );
+      }
+
+      // 5. SECTION 04: Solution cards reveal
+      if (categoryGridRef.current) {
+        gsap.fromTo(
+          categoryGridRef.current.children,
+          { opacity: 0, y: 35 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.12,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: categoryGridRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      }
+
+      // 6. SECTION 05: HOW WE OPERATE - Scroll-driven steps reveal with Scrub
+      if (operateStepsRef.current) {
+        const stepItems = operateStepsRef.current.querySelectorAll('.operate-step');
+        stepItems.forEach((step) => {
+          const num = step.querySelector('.step-num');
+          const content = step.querySelector('.step-content');
+
+          if (num) {
+            gsap.fromTo(
+              num,
+              { opacity: 0.02, scale: 0.85, x: -20 },
+              {
+                opacity: 0.12,
+                scale: 1,
+                x: 0,
+                scrollTrigger: {
+                  trigger: step,
+                  start: 'top 85%',
+                  end: 'top 45%',
+                  scrub: 0.7,
+                },
+              }
+            );
+          }
+
+          if (content) {
+            gsap.fromTo(
+              content,
+              { opacity: 0.2, y: 24 },
+              {
+                opacity: 1,
+                y: 0,
+                scrollTrigger: {
+                  trigger: step,
+                  start: 'top 82%',
+                  end: 'top 48%',
+                  scrub: 0.6,
+                },
+              }
+            );
+          }
+        });
+      }
+
+      // 7. SECTION 07: CTA Poster reveal
+      if (ctaContentRef.current) {
+        gsap.fromTo(
+          ctaContentRef.current.children,
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.85,
+            stagger: 0.12,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: ctaSectionRef.current || ctaContentRef.current,
+              start: 'top 75%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      }
+    });
+
+    return () => {
+      ctx.revert();
+      gsap.ticker.remove(tickerCb);
+      lenis.destroy();
+    };
+  }, []);
 
   return (
-    <div className="w-full pb-16 bg-brand-bg font-sans" id="landing-page-root">
+    <div className="bg-white text-[#1B1B19] min-h-screen font-sans selection:bg-brand-secondary selection:text-[#FFFEF2]">
       
-      {/* 1. HERO SECTION (Redesigned to replicate Image One's clean, classical serif and polaroid collage aesthetic) */}
-      <section className="relative overflow-hidden pt-20 pb-28 md:pt-24 md:pb-36 bg-brand-secondary border-b border-brand-border/20" id="hero-section">
-        {/* Ivory dot overlays on the gorgeous green background */}
-        <motion.div 
-          style={{ y: yHeroPattern }}
-          className="absolute inset-0 bg-[radial-gradient(rgba(255,254,242,0.06)_1.5px,transparent_1.5px)] bg-[size:24px_24px] pointer-events-none" 
-        />
-
-        {/* Ambient glows on green background for subtle texture */}
-        <motion.div style={{ y: yGlow1 }} className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-brand-accent/20 rounded-full filter blur-[120px] pointer-events-none z-0" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      {/* ==================================================== */}
+      {/* HERO SECTION — PURE WHITE BACKGROUND & CALM COPY */}
+      {/* ==================================================== */}
+      <section className="p-2 sm:p-4 md:p-6 bg-white relative overflow-hidden" id="editorial-hero-section">
+        <div className="max-w-[1600px] mx-auto overflow-hidden rounded-2xl border border-neutral-100 grid grid-cols-1 lg:grid-cols-12 min-h-[auto] lg:min-h-[82vh] bg-white relative z-10 shadow-xs">
           
-          {/* Scroll Down & Establish Indicators (Desktop Only) */}
-          <div className="hidden lg:flex absolute left-4 top-1/3 flex-col items-center gap-10 text-brand-bg/50 select-none pointer-events-none">
-            <span className="text-[9px] font-mono tracking-[0.25em] uppercase rotate-270 origin-left inline-block -translate-y-6">
-              SCROLL DOWN
-            </span>
-            <div className="h-10 w-[1px] bg-brand-bg/30"></div>
-          </div>
-
-          <div className="hidden lg:flex absolute right-4 top-1/3 flex-col items-center gap-2 text-right text-brand-bg/50 select-none pointer-events-none">
-            <span className="text-[14px] font-display font-bold tracking-wider">MCMXXVI</span>
-            <span className="text-[8px] font-mono tracking-widest uppercase opacity-75">ESTABLISHED 2026</span>
-          </div>
-
-          {/* Centered Minimalist Hero Typography */}
-          <div className="max-w-5xl mx-auto text-center space-y-12 relative z-10 animate-fade-in" id="hero-minimalist-container">
-            
-            <div className="space-y-6">
-              {/* Vintage Double-Rectangular Badge Accent (Touches of Old Money) */}
-              <div className="inline-flex items-center justify-center px-6 py-2 border-2 border-brand-bg/30 relative before:absolute before:inset-0.5 before:border before:border-brand-bg/15 before:pointer-events-none mx-auto mb-3 bg-brand-primary/20 rounded-sm shadow-md" id="knotify-hero-badge">
-                <span className="text-xs sm:text-sm font-mono uppercase tracking-[0.45em] text-[#FFFEF2] font-black">
-                  Made by Students. Built for Students.
-                </span>
-              </div>
- 
-              <h1 className="font-display font-extrabold text-6xl sm:text-8xl md:text-[98px] lg:text-[116px] text-[#FFFEF2] tracking-tight leading-[0.85] uppercase max-w-5xl mx-auto">
-                Resume at Covenant <br />
-                <span className="font-serif italic font-light text-brand-bg relative inline-block">
-                  With Confidence
-                  <span className="absolute -bottom-2 left-0 right-0 h-[1.5px] bg-brand-bg/40"></span>
-                  <span className="absolute -bottom-3 left-1/4 right-1/4 h-[0.5px] bg-brand-bg/25"></span>
-                </span>
-              </h1>
- 
-              <div className="h-[1px] w-20 bg-[#FFFEF2]/25 mx-auto my-6"></div>
-              
-              <p className="text-base sm:text-xl font-display italic text-[#FFFEF2]/95 max-w-2xl mx-auto leading-relaxed">
-                Whether you're resuming for your first semester or returning to campus, there's already enough to prepare for. Knotify makes getting your Covenant University tie simple, so you can arrive prepared and focus on what really matters.
-              </p>
-              <p className="text-xs sm:text-sm font-mono tracking-widest uppercase text-[#FFFEF2]/75 mt-3">
-                One less thing to worry about before resumption.
-              </p>
-
-              {/* Number of users active — prominent stat block */}
-              <div className="flex flex-col items-center gap-5 pt-6">
-                {/* Avatar stack */}
-                <div className="flex -space-x-3">
-                  <img className="inline-block h-11 w-11 rounded-full ring-[2.5px] ring-brand-secondary object-cover shadow-md" src="/models/model1.jpg" alt="Scholar 1" />
-                  <img className="inline-block h-11 w-11 rounded-full ring-[2.5px] ring-brand-secondary object-cover shadow-md" src="/models/model2.jpg" alt="Scholar 2" />
-                  <img className="inline-block h-11 w-11 rounded-full ring-[2.5px] ring-brand-secondary object-cover shadow-md" src="/models/model3.jpg" alt="Scholar 3" />
-                  <img className="inline-block h-11 w-11 rounded-full ring-[2.5px] ring-brand-secondary object-cover shadow-md" src="/models/model4.jpg" alt="Scholar 4" />
-                  <div className="inline-flex h-11 w-11 rounded-full ring-[2.5px] ring-brand-secondary bg-brand-primary/60 items-center justify-center shadow-md">
-                    <span className="text-[9px] font-mono font-bold text-[#FFFEF2]/80">+1K</span>
-                  </div>
-                </div>
-
-                {/* Large user count */}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block mb-0.5" />
-                    <span id="active-user-count" className="font-display font-black text-5xl sm:text-6xl md:text-7xl text-[#FFFEF2] tracking-tight leading-none">
-                      1,850+
-                    </span>
-                  </div>
-                  <span className="text-xs sm:text-sm font-mono tracking-[0.3em] uppercase text-[#FFFEF2]/60 mt-1">
-                    Students serving capacity
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* SEVEN POLAROID CAROUSEL/COLLAGE (Asymmetric overlapping premium layout - Augmented Bigger Sizes) */}
-            <div className="flex overflow-x-auto md:overflow-x-visible md:flex-nowrap items-center justify-start md:justify-center gap-6 md:gap-0 max-w-full md:max-w-7xl mx-auto pt-10 pb-16 relative scrollbar-none snap-x snap-mandatory px-6 md:px-0" id="hero-polaroid-collage">
-              
-              {/* Polaroid 1 (Extreme Left - Tilted Left) */}
-              <motion.div 
-                initial={{ opacity: 0, rotate: -20 }}
-                animate={{ opacity: 1, rotate: -14 }}
-                style={{ y: yHeroRightSub }}
-                transition={{ duration: 0.8, delay: 0.05 }}
-                whileHover={{ rotate: -5, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3 pb-6 shadow-[0_12px_28px_rgba(0,0,0,0.22)] rounded-sm border border-black/5 w-[165px] sm:w-[195px] shrink-0 md:-mr-8 relative group transition-all duration-300 z-5 cursor-pointer snap-center"
-              >
-                <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5 relative">
-                  <img 
-                    src="/models/model1.jpg" 
-                    alt="Premium Wear"
-                    className="w-full h-full object-cover grayscale-[18%] group-hover:grayscale-0 transition-all duration-500"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Polaroid 2 (Far Left - Tilted Left) */}
-              <motion.div 
-                initial={{ opacity: 0, rotate: -14 }}
-                animate={{ opacity: 1, rotate: -8 }}
-                style={{ y: yHeroRightMain }}
-                transition={{ duration: 0.8, delay: 0.1 }}
-                whileHover={{ rotate: -2, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[185px] sm:w-[220px] shrink-0 md:-mr-6 relative group transition-all duration-300 z-10 cursor-pointer snap-center"
-              >
-                <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5 relative">
-                  <img 
-                    src="/models/model2.jpg" 
-                    alt="Striped necktie"
-                    className="w-full h-full object-cover grayscale-[15%] group-hover:grayscale-0 transition-all duration-500"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Polaroid 3 (Mid Left - Tilted slightly Left) */}
-              <motion.div 
-                initial={{ opacity: 0, rotate: -8 }}
-                animate={{ opacity: 1, rotate: -3 }}
-                style={{ y: yHeroLeft }}
-                transition={{ duration: 0.8, delay: 0.15 }}
-                whileHover={{ rotate: 0, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[190px] sm:w-[230px] shrink-0 md:-mr-6 relative group transition-all duration-300 z-15 cursor-pointer snap-center"
-              >
-                <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5 relative">
-                  <img 
-                    src="/models/model3.jpg" 
-                    alt="Oxford Stripe"
-                    className="w-full h-full object-cover grayscale-[10%] group-hover:grayscale-0 transition-all duration-500"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Polaroid 4 (Center - Upright, Tall, Majestic, Elevated) - Knotify Logo middle spot */}
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                style={{ y: yHeroRightMain }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                whileHover={{ scale: 1.08, zIndex: 30 }}
-                className="bg-white p-4 pb-9 shadow-[0_25px_50px_rgba(0,0,0,0.35)] rounded-sm border border-black/5 w-[215px] sm:w-[265px] shrink-0 z-20 relative group transition-all duration-300 transform md:scale-105 cursor-pointer snap-center"
-              >
-                <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5">
-                  <img 
-                    src="/logo.png" 
-                    alt="Knotify Logo"
-                    className="w-full h-full object-cover group-hover:scale-102 transition-all duration-500"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Polaroid 5 (Mid Right - Tilted slightly Right) */}
-              <motion.div 
-                initial={{ opacity: 0, rotate: 8 }}
-                animate={{ opacity: 1, rotate: 3 }}
-                style={{ y: yHeroLeft }}
-                transition={{ duration: 0.8, delay: 0.25 }}
-                whileHover={{ rotate: 0, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[190px] sm:w-[230px] shrink-0 md:-mr-6 relative group transition-all duration-300 z-15 cursor-pointer snap-center"
-              >
-                <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5 relative">
-                  <img 
-                    src="/models/model4.jpg" 
-                    alt="Tweed Signatures"
-                    className="w-full h-full object-cover grayscale-[15%] group-hover:grayscale-0 transition-all duration-500"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Polaroid 6 (Far Right - Tilted Right with Tape Effect) - Incorporating model6.jpg */}
-              <motion.div 
-                initial={{ opacity: 0, rotate: 14 }}
-                animate={{ opacity: 1, rotate: 8 }}
-                style={{ y: yHeroRightMain }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                whileHover={{ rotate: 2, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3.5 pb-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] rounded-sm border border-black/5 w-[185px] sm:w-[220px] shrink-0 md:-mr-8 relative group transition-all duration-300 z-10 cursor-pointer snap-center"
-              >
-                {/* CSS Scotch Tape Representation */}
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-12 h-5 bg-neutral-200/45 backdrop-blur-[1.5px] border border-white/20 rotate-[-12deg] shadow-[0_1px_2px_rgba(0,0,0,0.05)] z-20" />
-
-                <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5">
-                  <img 
-                    src="/models/model6.jpg" 
-                    alt="Regal Traditional"
-                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Polaroid 7 (Extreme Right - Tilted Right) */}
-              <motion.div 
-                initial={{ opacity: 0, rotate: 20 }}
-                animate={{ opacity: 1, rotate: 14 }}
-                style={{ y: yHeroRightSub }}
-                transition={{ duration: 0.8, delay: 0.35 }}
-                whileHover={{ rotate: 5, scale: 1.05, zIndex: 30 }}
-                className="bg-white p-3 pb-6 shadow-[0_12px_28px_rgba(0,0,0,0.22)] rounded-sm border border-black/5 w-[165px] sm:w-[195px] shrink-0 relative group transition-all duration-300 z-5 cursor-pointer snap-center"
-              >
-                <div className="aspect-[4/5] bg-neutral-100 overflow-hidden rounded-xs border border-black/5">
-                  <img 
-                    src="/models/model3.jpg" 
-                    alt="Signature Style"
-                    className="w-full h-full object-cover grayscale-[18%] group-hover:grayscale-0 transition-all duration-500"
-                  />
-                </div>
-              </motion.div>
-
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-4 pt-4">
-              <button
-                onClick={onBrowseMarketplace}
-                className="inline-flex items-center gap-2.5 bg-[#FFFEF2] hover:bg-brand-primary text-brand-secondary hover:text-brand-bg rounded px-8 py-4 transition-all duration-300 cursor-pointer text-[10px] font-mono font-bold tracking-widest uppercase group border border-[#FFFEF2]/10 shadow-lg hover:scale-105"
-              >
-                Get Your Tie Before Resumption
-                <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button
-                onClick={() => {
-                  const el = document.getElementById('about-scroll-section');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="inline-flex items-center gap-2.5 bg-transparent hover:bg-[#FFFEF2]/10 text-[#FFFEF2] rounded px-8 py-4 transition-all duration-300 cursor-pointer text-[10px] font-mono font-bold tracking-widest uppercase group border border-[#FFFEF2]/20 shadow-lg hover:scale-105 animate-pulse"
-              >
-                Learn More
-              </button>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* 2. CONTINUOUS SCROLLING MARQUEE (Classical Professional Burgundy Bar Stripe) */}
-      <section className="bg-brand-secondary text-brand-bg py-3 overflow-hidden border-y border-brand-border select-none animate-fade-in" id="marquee-banner">
-        <div className="relative w-full overflow-hidden">
-          <div className="animate-marquee whitespace-nowrap flex items-center gap-16 text-[10px] font-mono tracking-[0.25em] uppercase font-semibold">
-            <span>SARTORIAL ACCENT</span>
-            <span>✦</span>
-            <span>DAPPER SENIORS STYLE</span>
-            <span>✦</span>
-            <span>INCOMING FRESHERS SPECIAL</span>
-            <span>✦</span>
-            <span>BLEND IN INSTANTLY</span>
-            <span>✦</span>
-            <span>ANTI-NEWBIE AESTHETIC</span>
-            <span>✦</span>
-            <span>VERIFIED CAMPUS TIES</span>
-            <span>✦</span>
-            
-            {/* Duplicated for smooth loop */}
-            <span>SARTORIAL ACCENT</span>
-            <span>✦</span>
-            <span>DAPPER SENIORS STYLE</span>
-            <span>✦</span>
-            <span>INCOMING FRESHERS SPECIAL</span>
-            <span>✦</span>
-            <span>BLEND IN INSTANTLY</span>
-            <span>✦</span>
-            <span>ANTI-NEWBIE AESTHETIC</span>
-            <span>✦</span>
-            <span>VERIFIED CAMPUS TIES</span>
-            <span>✦</span>
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* 3. ABOUT SCROLL-DRIVEN SECTION — sticky 3-layer cinematic reveal */}
-      <AboutSection />
-
-             {/* 4. CURATED FEATURED TIES: ULTRA-PREMIUM ASYMMETRIC GRID GALLERY */}
-      <motion.section 
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="py-28 bg-brand-bg border-b border-brand-border/30 relative overflow-hidden" 
-        id="featured-products"
-      >
-        {/* Decorative background glow */}
-        <motion.div style={{ y: yGlow1 }} className="absolute top-1/4 right-0 w-96 h-96 bg-brand-secondary/[0.03] rounded-full filter blur-[120px] pointer-events-none"></motion.div>
-        <motion.div style={{ y: yGlow2 }} className="absolute bottom-1/4 left-0 w-80 h-80 bg-brand-accent/[0.05] rounded-full filter blur-[100px] pointer-events-none"></motion.div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 border-b border-brand-border/40 pb-8">
-            <div className="text-left space-y-2">
-              <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-brand-secondary block">The Assemblage Collection</span>
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-brand-primary tracking-tight uppercase leading-none">
-                Featured Ties
-              </h2>
-              <p className="text-sm text-brand-secondary max-w-lg leading-relaxed">
-                A selection of high-end, handpicked neckwear. Verified against all university administrative standards and chapel dress criteria.
-              </p>
-            </div>
-            <button
-              onClick={onBrowseMarketplace}
-              className="px-8 py-3.5 bg-brand-primary hover:bg-brand-secondary text-brand-bg rounded-full text-xs font-mono font-bold tracking-widest uppercase flex items-center gap-2 self-start md:self-end transition-all duration-300 shadow-md cursor-pointer"
-              id="btn-see-all-featured"
-            >
-              View Catalog
-              <span>↗</span>
-            </button>
-          </div>
-          <div className="space-y-3 text-center">
-            <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.35em] text-brand-secondary">
-              Live stock synced from Supabase
-            </div>
-            <div className="amount text-[30px] font-display font-black text-4xl sm:text-5xl text-brand-primary tracking-tight leading-none">
-              Be the <span className="font-serif italic font-light text-brand-secondary">No. {inventorySummary?.paidUsers+1}</span> student
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-6 text-[10px] font-mono uppercase tracking-[0.22em] text-brand-secondary/90">
-              <span>{inventorySummary?.totalQuantity ?? 0}+ ties in stock</span>
-              <span>{inventorySummary?.paidUsers ?? 0}+ paid scholars</span>
-            </div>
-          </div>         
-  
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-8" 
-            id="featured-grid"
+          {/* LEFT 50% PANEL: Clean Pure White Canvas */}
+          <div 
+            ref={heroLeftRef}
+            className="lg:col-span-6 p-6 xs:p-8 sm:p-12 md:p-16 flex flex-col justify-between text-left relative z-10 bg-white"
           >
-            {featuredProducts.slice(0, 10).map((product) => {
-              const originalPrice = product?.originalPrice ?? 0;
-              const price = product?.price ?? 0;
-              const discountPercent = originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-              const isWishlisted = isInWishlist(product.id);
-              const isOutOfStock = product.stock === 0;
-  
-              return (
-                <motion.div
-                  key={product.id}
-                  variants={itemVariants}
-                  whileHover={isOutOfStock ? {} : { y: -4 }}
-                  className={`bg-transparent flex flex-col justify-between relative group transition-all duration-300 ${isOutOfStock ? 'opacity-40 blur-[1px] cursor-not-allowed pointer-events-none' : 'cursor-pointer'}`}
-                  onClick={() => !isOutOfStock && onOpenProductDetail(product)}
-                  id={`featured-${product.id}`}
+            
+            {/* Top editorial pill tag */}
+            <div id="hero-pill-badge" className="inline-flex items-center gap-2 self-start px-3.5 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full mb-4 sm:mb-6">
+              <img src="/logo.svg" alt="Knotify Logo" className="w-4 h-4 object-contain" />
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-700 font-bold">
+                FINE NECKWEAR SHOWCASE
+              </span>
+            </div>
+
+            {/* Center Block: Main Title + Calm Easygoing Tagline */}
+            <div className="my-auto py-4 sm:py-8 space-y-5">
+              
+              {/* Main Headline Title: Knotify: A Place for your Ties */}
+              <h1 
+                ref={heroLogoRef}
+                className="font-display font-black text-4xl xs:text-5xl sm:text-6xl lg:text-7xl text-brand-primary tracking-tight leading-[1.05] select-none"
+              >
+                Knotify: A Place for your Ties
+              </h1>
+
+              {/* Calm, Friendly Tagline */}
+              <div ref={heroTaglineRef} className="space-y-4 max-w-lg">
+                <p className="font-display italic text-lg sm:text-xl md:text-2xl text-brand-secondary leading-snug">
+                  “Simple, well-made ties for every occasion.”
+                </p>
+                <p className="text-xs sm:text-sm font-sans text-neutral-600 leading-relaxed font-normal">
+                  Finding the right tie shouldn't feel complicated. Explore our curated selection of classic, essential, and signature neckwear — made to fit comfortably and look good every time.
+                </p>
+
+                {/* Direct Action Button */}
+                <div className="pt-2 flex flex-wrap items-center gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onBrowseMarketplace}
+                    className="inline-flex items-center justify-center gap-2.5 bg-brand-primary hover:bg-brand-secondary text-[#FFFEF2] font-mono text-xs font-bold uppercase tracking-widest px-7 py-4 rounded-full shadow-sm transition-all cursor-pointer"
+                  >
+                    <span>EXPLORE THE COLLECTION</span>
+                    <ArrowRight size={13} />
+                  </motion.button>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom Meta Bar */}
+            <div id="hero-meta-bar" className="pt-6 border-t border-neutral-100 flex flex-wrap items-center justify-between gap-3 text-xs font-mono tracking-widest uppercase text-neutral-500">
+              
+              <button 
+                onClick={onBrowseMarketplace} 
+                className="inline-flex items-center gap-2 font-bold text-brand-secondary hover:text-brand-primary transition-colors cursor-pointer group text-xs"
+              >
+                <span>VIEW STORE CATALOG</span>
+                <ArrowRight size={12} className="transform group-hover:translate-x-1 transition-transform" />
+              </button>
+
+              <div className="hidden sm:flex items-center gap-2 text-[10px] text-neutral-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>CURATED COLLECTION SHOWCASE</span>
+              </div>
+
+              <div className="font-bold text-neutral-800 text-xs">
+                KNOTIFY 2026
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* RIGHT 50% PANEL: 2-Column Mosaic Photo Grid (Mixing Models + Ties) */}
+          <div 
+            ref={heroRightRef}
+            className="lg:col-span-6 bg-[#1B1B19] p-1 xs:p-1.5 sm:p-2 overflow-hidden relative min-h-[320px] xs:min-h-[400px] sm:min-h-[500px]"
+          >
+            {/* 2-Column Mosaic Grid Container */}
+            <div 
+              ref={mosaicGridRef}
+              className="grid grid-cols-2 gap-1 xs:gap-1.5 h-full w-full"
+            >
+              {/* Column 1 Cards */}
+              <div className="space-y-1 xs:space-y-1.5 flex flex-col justify-between h-full">
+                
+                {/* Card 1: Model 1 */}
+                <div className="mosaic-item aspect-[4/5] bg-neutral-900 overflow-hidden relative rounded-xs sm:rounded-none">
+                  <img src="/models/model1.jpg" alt="Model Styling Chapel Tie" className="w-full h-full object-cover grayscale-[15%] hover:scale-105 transition-transform duration-700" />
+                </div>
+
+                {/* Card 2: Tie 1 */}
+                <div
+                  onClick={() => mosaicCards[1].item && onOpenProductDetail(mosaicCards[1].item)}
+                  className="mosaic-item aspect-[4/3] bg-neutral-900 overflow-hidden relative cursor-pointer rounded-xs sm:rounded-none"
                 >
-                  
-                  {/* Image container with fine aesthetics */}
-                  <div className="aspect-[4/5] w-full rounded-lg overflow-hidden bg-brand-light-gray/40 border border-brand-border/20 relative mb-4 flex items-center justify-center">
-                    {product.image ? (
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className={`w-full h-full object-cover grayscale-[5%] group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-500 ${isOutOfStock ? 'opacity-40 grayscale' : ''}`}
-                        referrerPolicy="no-referrer"
+                  {mosaicCards[1].item && mosaicCards[1].item.image ? (
+                    <img src={mosaicCards[1].item.image} alt={mosaicCards[1].item.name} className="w-full h-full object-cover grayscale-[10%] hover:scale-105 transition-transform duration-700" />
+                  ) : (
+                    <TiePlaceholder color="#1B1B19" category="Classic" name="Plain Black" className="w-full h-full" />
+                  )}
+                </div>
+
+                {/* Card 3: Model 2 */}
+                <div className="mosaic-item aspect-[4/3] bg-neutral-900 overflow-hidden relative rounded-xs sm:rounded-none">
+                  <img src="/models/model2.jpg" alt="Fresher Chapel Look" className="w-full h-full object-cover grayscale-[15%] hover:scale-105 transition-transform duration-700" />
+                </div>
+
+              </div>
+
+              {/* Column 2 Cards */}
+              <div className="space-y-1 xs:space-y-1.5 flex flex-col justify-between h-full">
+                
+                {/* Card 4: Tie 2 */}
+                <div
+                  onClick={() => mosaicCards[3].item && onOpenProductDetail(mosaicCards[3].item)}
+                  className="mosaic-item aspect-[4/3] bg-neutral-900 overflow-hidden relative cursor-pointer rounded-xs sm:rounded-none"
+                >
+                  {mosaicCards[3].item && mosaicCards[3].item.image ? (
+                    <img src={mosaicCards[3].item.image} alt={mosaicCards[3].item.name} className="w-full h-full object-cover grayscale-[10%] hover:scale-105 transition-transform duration-700" />
+                  ) : (
+                    <TiePlaceholder color="#1F3E2B" category="Essential" name="Wine Tie" className="w-full h-full" />
+                  )}
+                </div>
+
+                {/* Card 5: Model 3 */}
+                <div className="mosaic-item aspect-[4/5] bg-neutral-900 overflow-hidden relative rounded-xs sm:rounded-none">
+                  <img src="/models/model3.jpg" alt="Editorial Covenant Tie" className="w-full h-full object-cover grayscale-[15%] hover:scale-105 transition-transform duration-700" />
+                </div>
+
+                {/* Card 6: Model 4 / Tie 3 */}
+                <div className="mosaic-item aspect-[4/3] bg-neutral-900 overflow-hidden relative rounded-xs sm:rounded-none">
+                  <img src="/models/model4.jpg" alt="Academic Neckwear" className="w-full h-full object-cover grayscale-[15%] hover:scale-105 transition-transform duration-700" />
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ==================================================== */}
+      {/* SECTION 02 — PART 1 STORY: NOBODY TELLS YOU WHICH TIE TO WEAR */}
+      {/* SplitText word reveal + Scrub text progression */}
+      {/* ==================================================== */}
+      <section 
+        ref={problemSectionRef}
+        className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-[#FFFEF2] border-b border-brand-border/20 relative"
+        id="problem-insight-section"
+      >
+        <div className="max-w-4xl mx-auto text-center space-y-10">
+
+          {/* Headline with SplitText word tokens */}
+          <h2 
+            ref={problemHeadlineRef}
+            className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-brand-primary uppercase tracking-tight leading-tight"
+          >
+            {'Nobody tells you which tie to wear.'.split(' ').map((word, i) => (
+              <span key={i} className="inline-block mr-[0.25em] split-word">
+                {word}
+              </span>
+            ))}
+          </h2>
+
+          <div className="h-0.5 w-16 bg-brand-secondary/30 mx-auto" />
+
+          {/* Staggered GSAP Scroll & Scrub Narrative */}
+          <div 
+            ref={problemLinesRef}
+            className="space-y-4 text-base sm:text-xl text-brand-primary/80 font-sans max-w-2xl mx-auto leading-relaxed font-light text-left sm:text-center"
+          >
+            <p>You get admitted.</p>
+            <p>You prepare your shirts.</p>
+            <p>You get your trousers ready.</p>
+            <p>You start counting down to resumption.</p>
+            
+            <p className="pt-4 font-serif italic text-2xl sm:text-3xl text-brand-secondary font-normal">
+              Then you realise:
+            </p>
+            
+            <p className="font-bold text-brand-primary text-lg sm:text-2xl pt-1">
+              You still have absolutely no idea which tie you’re supposed to wear.
+            </p>
+
+            <p className="text-sm sm:text-base text-brand-primary/70 pt-4 font-sans leading-relaxed">
+              Knotify exists for that exact moment. Built by Covenant University students who have been through resumption week, so you can pick your tie with complete confidence.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ==================================================== */}
+      {/* SECTION 03 — PART 2 STORY: WHAT HAPPENS IF YOU DON'T SORT YOUR TIE BEFORE RESUMPTION? */}
+      {/* Exact requested copy with GSAP SplitText words + scroll-driven progression */}
+      {/* ==================================================== */}
+      <section
+        ref={riskSectionRef}
+        className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-[#FDFCF7] border-b border-brand-border/20 relative"
+        id="the-risk-section"
+      >
+        <div className="max-w-4xl mx-auto text-center space-y-10">
+
+          {/* Headline with SplitText word tokens */}
+          <h2 
+            ref={riskHeadlineRef}
+            className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-brand-primary uppercase tracking-tight leading-tight"
+          >
+            {"What happens if you don't sort your tie before resumption?".split(' ').map((word, i) => (
+              <span key={i} className="inline-block mr-[0.25em] split-word">
+                {word}
+              </span>
+            ))}
+          </h2>
+
+          <div className="h-0.5 w-16 bg-rose-800/30 mx-auto" />
+
+          {/* Requested story copy with GSAP ScrollTrigger scrub progression */}
+          <div 
+            ref={riskLinesRef}
+            className="space-y-4 text-base sm:text-xl text-brand-primary/80 font-sans max-w-2xl mx-auto leading-relaxed font-light text-left sm:text-center"
+          >
+            <p className="font-bold text-brand-primary text-xl sm:text-2xl">
+              8 AM. Your first class.
+            </p>
+            
+            <p>You put on the tie you bought back home.</p>
+
+            <p className="pt-3 font-serif italic text-2xl sm:text-3xl text-rose-800 font-normal">
+              Then you realise:
+            </p>
+
+            <p className="font-bold text-rose-900 text-lg sm:text-2xl pt-1">
+              It’s wrong.
+            </p>
+
+            <p>Your roommate doesn’t have an extra.</p>
+
+            <p className="text-sm sm:text-base text-brand-primary/75 leading-relaxed">
+              Now you’re rushing around campus, trying to borrow one or find someone selling the right tie.
+            </p>
+
+            <p className="pt-2 font-serif italic text-lg sm:text-xl text-brand-primary">
+              And when you finally do?
+            </p>
+
+            <p className="font-bold text-brand-primary text-lg sm:text-2xl text-rose-900">
+              You pay more than you should have.
+            </p>
+
+            <div className="h-px w-12 bg-brand-border/30 mx-auto my-4" />
+
+            <p className="text-sm sm:text-base text-brand-primary/80 font-sans leading-relaxed pt-2">
+              Every year, freshers arrive without sorting their ties—and end up scrambling, borrowing, or overpaying.
+            </p>
+
+            <p className="text-sm sm:text-base text-brand-secondary font-medium font-sans leading-relaxed">
+              Knotify was built so that doesn't have to be you.
+            </p>
+
+            <div className="pt-4 space-y-2 text-sm sm:text-base font-semibold text-brand-primary">
+              <p>Reserve your tie before you pack your bags.</p>
+              <p className="text-brand-secondary">Arrive at Covenant already sorted.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ==================================================== */}
+      {/* SECTION 04 — CURATED SOLUTION CATEGORIES */}
+      {/* Interactive GSAP Flip filter transitions */}
+      {/* ==================================================== */}
+      <section 
+        ref={solutionSectionRef}
+        className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 bg-brand-card/40 border-b border-brand-border/20"
+        id="curated-solution-section"
+      >
+        <div className="max-w-7xl mx-auto space-y-12">
+          
+          <div className="text-center space-y-4">
+            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-secondary font-bold block">
+              THE TIE. WITHOUT THE GUESSING.
+            </span>
+            <h2 className="font-display font-bold text-3xl sm:text-5xl text-brand-primary uppercase tracking-tight">
+              Pick your energy.
+            </h2>
+
+            {/* GSAP Flip category filter tabs */}
+            <div className="flex items-center justify-center gap-2 pt-2 flex-wrap">
+              {(['All', 'Classic', 'Essential', 'Statement'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => handleCategoryFilterChange(filter)}
+                  className={`px-4 py-1.5 rounded-full font-mono text-[11px] uppercase tracking-wider transition-all cursor-pointer ${
+                    activeCategoryFilter === filter
+                      ? 'bg-brand-primary text-[#FFFEF2] shadow-sm'
+                      : 'bg-[#FFFEF2] text-brand-primary/70 hover:text-brand-primary hover:bg-neutral-100 border border-brand-border/20'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Cards container animated with GSAP Flip */}
+          <div 
+            ref={categoryGridRef}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left"
+          >
+            {filteredCards.map((card) => (
+              <motion.div 
+                key={card.id}
+                layout
+                whileHover={{ y: -6, scale: 1.01 }}
+                className={`bg-[#FFFEF2] rounded-2xl border p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-300 group ${
+                  card.borderHighlight
+                    ? 'border-brand-secondary/40 ring-1 ring-brand-secondary/20 relative'
+                    : 'border-brand-border/30'
+                }`}
+              >
+                {card.borderHighlight && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-secondary text-[#FFFEF2] text-[9px] font-mono uppercase tracking-widest px-3 py-0.5 font-bold rounded-full">
+                    {card.badge}
+                  </div>
+                )}
+                <div className="space-y-4">
+                  <div className="aspect-[4/5] bg-neutral-100 rounded-xl overflow-hidden relative">
+                    {card.product && card.product.image ? (
+                      <img 
+                        src={card.product.image} 
+                        alt={card.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                       />
                     ) : (
-                      <TiePlaceholder
-                        color={product.color}
-                        category={product.category}
-                        name={product.name}
-                        className="w-full h-full"
-                      />
+                      <TiePlaceholder color={card.color} category={card.category} name={card.title} className="w-full h-full" />
                     )}
-                    
-                    {isOutOfStock ? (
-                      <span className="absolute top-3 left-3 bg-brand-primary text-brand-bg font-mono text-[8px] tracking-widest uppercase px-2 py-0.5 font-bold rounded-sm shadow-sm">
-                        OUT OF STOCK
+                    {!card.borderHighlight && (
+                      <span className={`absolute top-3 left-3 ${card.badgeBg} text-[#FFFEF2] text-[9px] font-mono uppercase tracking-widest px-2.5 py-1 font-bold rounded-full`}>
+                        {card.badge}
                       </span>
-                    ) : discountPercent > 0 ? (
-                      <span className="absolute top-3 left-3 bg-[#F5F2EB] text-[#0A0A0A] font-mono text-[9px] tracking-widest uppercase px-2 py-0.5 font-bold rounded-sm shadow-sm">
-                        -{discountPercent}%
-                      </span>
-                    ) : null}
-  
-                    {/* Wishlist Icon */}
-                    {!isOutOfStock && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleWishlist(product, e);
-                        }}
-                        className="absolute top-3 right-3 p-1.5 bg-black/40 backdrop-blur-sm rounded-full text-brand-secondary hover:bg-white hover:text-black transition-all duration-300 opacity-0 group-hover:opacity-100"
-                        aria-label="Add to Wishlist"
-                      >
-                        <Heart 
-                          size={12} 
-                          strokeWidth={2.5}
-                          className={isWishlisted ? 'fill-brand-primary text-brand-primary' : 'text-brand-secondary'} 
-                        />
-                      </button>
-                    )}
-            {product.name == "Plain Black Tie" || product.name == "Plain Wine Tie" ?
-
-                <div className="absolute text-white right-4 bg-rose-500 font-mono text-[9px] tracking-widest uppercase px-3 py-1.5  rounded shadow border border-brand-border flex items-center gap-1 ">
-                  HOT
-              </div>
-                : ""}
-                    {/* Quick Add To Bag Hover bar */}
-                    {!isOutOfStock && (
-                      <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onAddToCart(product, e);
-                          }}
-                          className="w-full bg-[#F5F2EB] hover:bg-white text-black text-[9px] font-mono tracking-widest py-3 hover:text-black transition-colors uppercase font-bold"
-                        >
-                          + QUICK RESERVE
-                        </button>
-                      </div>
                     )}
                   </div>
-  
-                  {/* Text labels inside card */}
-                  <div className="text-left space-y-1.5 px-0.5">
-                    <h3 className="font-sans font-medium text-sm text-brand-primary tracking-tight leading-snug group-hover:text-brand-secondary transition-colors line-clamp-1">
-                      {product.name}
+                  <div>
+                    <span className="text-[10px] font-mono text-brand-secondary font-bold uppercase tracking-widest block">
+                      {card.tag}
+                    </span>
+                    <h3 className="font-display font-bold text-xl uppercase text-brand-primary mt-1">
+                      {card.title}
                     </h3>
-                    
-                    <div className="flex items-baseline justify-between pt-2 border-t border-brand-border/10 mt-2">
-                      <div className="flex flex-col text-left">
-                        <div className="flex items-baseline gap-2">
-                          <span className="font-sans text-xs font-bold text-brand-primary">
-                            ₦{(product?.price ?? 0).toLocaleString()}
-                          </span>
-                          {(product?.originalPrice ?? 0) > (product?.price ?? 0) && (
-                            <span className="font-sans text-[9px] text-brand-secondary/30 line-through">
-                              ₦{(product?.originalPrice ?? 0).toLocaleString()}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[9px] font-mono text-brand-secondary/65 mt-0.5">
-                          {product.stock!==0 ? product.stock+ " in stock": "out of stock"}
-                        </span>
-                      </div>
-                      <div className="text-[9px] font-mono text-brand-secondary/65 tracking-wider uppercase">
-                        {product.rating} / 5.0
-                      </div>
-                    </div>
+                    <p className="text-xs text-brand-primary/70 font-sans mt-2 leading-relaxed">
+                      {card.desc}
+                    </p>
                   </div>
-  
-                </motion.div>
-              );
-            })}
-          </motion.div>
+                </div>
+
+                <div className="pt-6 border-t border-brand-border/20 mt-6 flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-brand-secondary">{card.vibe}</span>
+                  <button 
+                    onClick={() => onBrowseWithFilter(card.filterType, '')} 
+                    className="text-xs font-mono uppercase font-bold text-brand-secondary hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Explore {card.category}</span>
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
         </div>
-      </motion.section>
+      </section>
 
-      {/* 5. THE COMMUNITY: REDESIGNED WITH ASYMMETRIC MINIMALIST LISTS */}
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="py-28 bg-brand-bg border-b border-brand-border relative overflow-hidden" 
-        id="community"
+      {/* ==================================================== */}
+      {/* SECTION 05 — HOW WE OPERATE (SUMMARIZED & IMMERSIVE) */}
+      {/* ==================================================== */}
+      <section 
+        ref={operateSectionRef}
+        className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 bg-[#FFFEF2] border-b border-brand-border/20 relative overflow-hidden" 
+        id="how-we-operate-section"
       >
-        {/* Subtle background element */}
-        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-brand-secondary/[0.02] rounded-full filter blur-[120px] pointer-events-none" />
+        <div className="max-w-6xl mx-auto space-y-16">
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
-            
-            {/* Left Column: Trust Section */}
-            <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-28">
-              <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-brand-secondary font-bold block">
-                Built by Students
-              </span>
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-brand-primary tracking-tight uppercase leading-[1.05]">
-                BUILT BY <br />
-                STUDENTS
-              </h2>
-              <div className="h-[1px] w-12 bg-brand-secondary"></div>
-              <p className="text-sm text-brand-primary/70 leading-relaxed font-sans">
-                We understand the resumption experience because we've lived it. That's why we created Knotify—to make preparing for Covenant University just a little easier for every student.
-              </p>
+          <div className="text-center space-y-3 max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-brand-secondary/10 text-brand-secondary px-3.5 py-1.5 rounded-full text-[10px] font-mono tracking-widest uppercase font-bold">
+              <Sparkles size={11} />
+              THE KNOTIFY EXPERIENCE
             </div>
- 
-            {/* Right Column: Premium High-Contrast Rows */}
-            <div className="lg:col-span-8 divide-y divide-brand-border/40" id="community-channels-list">
-              
-              {/* Channel 1: WhatsApp */}
-              <div className="py-8 first:pt-0 group">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <div className="space-y-3 max-w-xl">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span className="text-[9px] font-mono text-emerald-600 font-bold tracking-widest uppercase">WhatsApp Community</span>
-                    </div>
-                    <h3 className="font-display font-black text-xl sm:text-2xl text-brand-primary uppercase tracking-tight group-hover:text-brand-secondary transition-colors">
-                      Notify Charge
-                    </h3>
-                    <p className="text-sm text-brand-primary/75 leading-relaxed font-sans">
-                      Coordinate with fellow scholars to get your class-ready ties directly in your hall lobby. Simple. Reliable. Stress-free.
-                    </p>
-                  </div>
-                  
-                  <div className="shrink-0">
-                    <a
-                      href="https://chat.whatsapp.com/Kiwu2BWP1NuE0z0wC61to0"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-6 py-3 border border-brand-primary/20 hover:border-brand-secondary hover:bg-brand-secondary hover:text-brand-bg rounded-sm transition-all duration-300 text-xs font-mono tracking-widest uppercase font-bold group/btn cursor-pointer bg-transparent text-brand-primary"
-                    >
-                      Connect Chat
-                      <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
-                    </a>
-                  </div>
+            <h2 className="font-display font-bold text-3xl sm:text-5xl text-brand-primary uppercase tracking-tight leading-tight">
+              Three Steps To Absolute Confidence.
+            </h2>
+            <p className="text-xs sm:text-sm text-brand-primary/75 font-sans leading-relaxed max-w-xl mx-auto font-light">
+              We took the stress out of formal neckwear. Here is how we curate, present, and elevate your presence.
+            </p>
+          </div>
+
+          {/* Immersive 3-Step Interactive Grid */}
+          <div ref={operateStepsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+
+            {/* STEP 01 */}
+            <motion.div 
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.3 }}
+              className="bg-brand-card border border-brand-border/40 p-8 rounded-xl flex flex-col justify-between relative group hover:border-brand-secondary/40 shadow-xs transition-all"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-display font-black text-5xl text-brand-secondary/20 group-hover:text-brand-secondary/40 transition-colors">01</span>
+                  <span className="text-[9px] font-mono uppercase tracking-widest bg-brand-bg px-3 py-1 rounded border border-brand-border font-bold text-brand-primary">
+                    CURATION
+                  </span>
                 </div>
-              </div>
- 
-              {/* Channel 2: Telegram */}
-              <div className="py-8 group">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <div className="space-y-3 max-w-xl">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-secondary animate-pulse"></span>
-                      <span className="text-[9px] font-mono text-brand-secondary font-bold tracking-widest uppercase">Instant Notification</span>
-                    </div>
-                    <h3 className="font-display font-black text-xl sm:text-2xl text-brand-primary uppercase tracking-tight group-hover:text-brand-secondary transition-colors">
-                      Telegram Channels
-                    </h3>
-                    <p className="text-sm text-brand-primary/75 leading-relaxed font-sans">
-                      Receive notifications about available ties in your hall, helping you prepare before you arrive on campus.
-                    </p>
-                  </div>
-                  
-                  <div className="shrink-0">
-                    <a
-                      href="https://t.me/+go-lAiSrbJ5hNGVk"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-6 py-3 border border-brand-primary/20 hover:border-brand-secondary hover:bg-brand-secondary hover:text-brand-bg rounded-sm transition-all duration-300 text-xs font-mono tracking-widest uppercase font-bold group/btn cursor-pointer bg-transparent text-brand-primary"
-                    >
-                      Subscribe
-                      <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
-                    </a>
-                  </div>
-                </div>
+                <h3 className="font-display font-bold text-xl uppercase text-brand-primary leading-tight">
+                  Hand-Picked Compliant Weaves
+                </h3>
+                <p className="text-xs text-brand-primary/75 font-sans leading-relaxed">
+                  Every tie in our exhibition is pre-screened for weave density, knot roll dimple stability, and chapel/corporate approval.
+                </p>
               </div>
 
-            </div>
+              <div className="pt-6 border-t border-brand-border/20 mt-6 flex items-center justify-between text-[10px] font-mono text-brand-secondary uppercase font-semibold">
+                <span>01 &bull; Discovery</span>
+                <span>Verified Quality</span>
+              </div>
+            </motion.div>
+
+            {/* STEP 02 */}
+            <motion.div 
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.3 }}
+              className="bg-brand-card border border-brand-border/40 p-8 rounded-xl flex flex-col justify-between relative group hover:border-brand-secondary/40 shadow-xs transition-all"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-display font-black text-5xl text-brand-secondary/20 group-hover:text-brand-secondary/40 transition-colors">02</span>
+                  <span className="text-[9px] font-mono uppercase tracking-widest bg-brand-bg px-3 py-1 rounded border border-brand-border font-bold text-brand-primary">
+                    PRESENTATION
+                  </span>
+                </div>
+                <h3 className="font-display font-bold text-xl uppercase text-brand-primary leading-tight">
+                  Pre-Ironed & Packaged
+                </h3>
+                <p className="text-xs text-brand-primary/75 font-sans leading-relaxed">
+                  Zero wrinkles. Zero cheap synthetics. Our double-brushed inner wool lining ensures a structured Windsor knot that holds form all day.
+                </p>
+              </div>
+
+              <div className="pt-6 border-t border-brand-border/20 mt-6 flex items-center justify-between text-[10px] font-mono text-brand-secondary uppercase font-semibold">
+                <span>02 &bull; Craft</span>
+                <span>Double Lining</span>
+              </div>
+            </motion.div>
+
+            {/* STEP 03 */}
+            <motion.div 
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.3 }}
+              className="bg-brand-card border border-brand-border/40 p-8 rounded-xl flex flex-col justify-between relative group hover:border-brand-secondary/40 shadow-xs transition-all"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-display font-black text-5xl text-brand-secondary/20 group-hover:text-brand-secondary/40 transition-colors">03</span>
+                  <span className="text-[9px] font-mono uppercase tracking-widest bg-brand-bg px-3 py-1 rounded border border-brand-border font-bold text-brand-primary">
+                    PRESENCE
+                  </span>
+                </div>
+                <h3 className="font-display font-bold text-xl uppercase text-brand-primary leading-tight">
+                  Unshakeable Confidence
+                </h3>
+                <p className="text-xs text-brand-primary/75 font-sans leading-relaxed">
+                  Step into chapel, boardrooms, or presentations knowing your neckwear speaks of quiet authority before you say a single word.
+                </p>
+              </div>
+
+              <div className="pt-6 border-t border-brand-border/20 mt-6 flex items-center justify-between text-[10px] font-mono text-brand-secondary uppercase font-semibold">
+                <span>03 &bull; Authority</span>
+                <span>Command Respect</span>
+              </div>
+            </motion.div>
 
           </div>
-        </div>
-      </motion.section>
 
-      {/* FAQ Accordions Section */}
+        </div>
+      </section>
+
+      {/* ==================================================== */}
+      {/* SECTION 06 — PROMINENT FAQs */}
+      {/* ==================================================== */}
       <FAQSection />
 
-      {/* 6. OUTCOME-FOCUSED PREMIUM HIGH-CONTRAST GREEN HERO CTA (SHOUTS AT THE USER) */}
-      <motion.section 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-60px" }}
-        className="py-28 px-4 sm:px-8 bg-brand-secondary text-center relative overflow-hidden" 
-        id="final-cta"
+      {/* ==================================================== */}
+      {/* SECTION 07 — FINAL ULTRA-AESTHETIC CAMPAIGN POSTER CTA */}
+      {/* ==================================================== */}
+      <section 
+        ref={ctaSectionRef}
+        className="py-28 sm:py-36 bg-[#0B2316] text-[#FFFEF2] px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden" 
+        id="final-cta-section"
       >
-        {/* Soft, Warm Background Radial Glows */}
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,254,242,0.06)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-        <motion.div style={{ y: yGlow2 }} className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-brand-accent/25 rounded-full filter blur-[120px] pointer-events-none" />
+        
+        {/* Subtle Radial Glow & Background Texture */}
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-60" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <motion.div 
-          variants={containerVariants}
-          className="max-w-3xl mx-auto space-y-8 relative z-10 py-10"
-        >
-          {/* Large display text that literally shouts at the user */}
-          <motion.h2 
-            variants={itemVariants} 
-            className="font-display font-black text-4xl sm:text-6xl md:text-7xl text-brand-bg tracking-tight uppercase leading-[1.05]"
-          >
-            Ready for Resumption?
-          </motion.h2>
+        <div ref={ctaContentRef} className="max-w-4xl mx-auto space-y-8 relative z-10">
+          
+          <h2 className="font-display font-bold text-4xl sm:text-6xl lg:text-7xl uppercase tracking-tight leading-[1.05] text-[#FFFEF2]">
+            NEW SCHOOL.<br />
+            NEW PEOPLE.<br />
+            NO NEED TO LOOK LOST.
+          </h2>
 
-          <motion.p 
-            variants={itemVariants} 
-            className="text-xs sm:text-sm text-brand-bg/85 font-sans max-w-xl mx-auto leading-relaxed"
-          >
-            Order your Covenant University tie today and arrive on campus prepared, confident, and ready for the semester ahead.
-          </motion.p>
+          <p className="text-sm sm:text-base text-[#FFFEF2]/80 font-sans max-w-xl mx-auto font-light leading-relaxed">
+            There's enough to figure out before resumption.
+            <br />
+            Your tie shouldn't be one of them.
+          </p>
 
-          <motion.div variants={itemVariants} className="pt-6">
-            <button
-              onClick={onBrowseMarketplace}
-              className="px-12 py-4.5 bg-brand-bg text-brand-secondary hover:text-brand-bg hover:bg-brand-primary font-mono text-xs tracking-widest uppercase font-black rounded-md shadow-2xl transition-all duration-300 hover:scale-105 inline-flex items-center gap-3.5 cursor-pointer"
-              id="cta-bottom-browse"
+          <div className="pt-6 flex items-center justify-center gap-4">
+            {/* WhatsApp icon button — left */}
+            <a
+              href="https://chat.whatsapp.com/Kiwu2BWP1NuE0z0wC61to0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center w-12 h-12 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all cursor-pointer shrink-0"
+              aria-label="Join WhatsApp"
             >
-              Order Before Resumption
-              <ArrowRight size={14} />
-            </button>
-          </motion.div>
+              <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            </a>
 
+            {/* Find My Tie — center */}
+            <motion.button
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={onBrowseMarketplace}
+              className="inline-flex items-center justify-center gap-3 bg-[#FFFEF2] hover:bg-[#F4F2E6] text-[#0B2316] font-mono text-xs font-bold uppercase tracking-widest px-10 py-4 rounded-full shadow-2xl transition-all cursor-pointer"
+            >
+              <span>FIND MY TIE →</span>
+            </motion.button>
 
-        </motion.div>
-      </motion.section>
+            {/* Telegram icon button — right */}
+            <a
+              href="https://t.me/+go-lAiSrbJ5hNGVk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center w-12 h-12 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all cursor-pointer shrink-0"
+              aria-label="Join Telegram"
+            >
+              <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+            </a>
+          </div>
+
+        </div>
+      </section>
+
     </div>
   );
 }
-

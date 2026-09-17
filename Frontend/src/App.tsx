@@ -445,22 +445,11 @@ useEffect(() => {
   return (
     <div className="min-h-screen flex flex-col justify-between bg-brand-bg relative antialiased" id="marketplace-viewport">
       <Navbar
-        currentTab={currentTab}
+        currentTab={currentTab === 'home' ? 'home' : 'marketplace'}
         setCurrentTab={(tab) => {
           setCurrentTab(tab);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        cartCount={cartCount}
-        wishlistCount={wishlistCount}
-        onOpenCart={() => setCurrentTab('checkout')}
-        onOpenWishlist={() => setCurrentTab('wishlist')}
-        onOpenBecomeSeller={() => setCurrentTab('sell')}
-        currentUser={currentUser}
-        onOpenAuth={() => {
-          setPendingAction(null);
-          setIsAuthOpen(true);
-        }}
-        onLogout={handleLogout}
       />
 
       <main className="flex-grow">
@@ -485,7 +474,7 @@ useEffect(() => {
                 inventorySummary={inventorySummary}
               />
             </motion.div>
-          ) : currentTab === 'marketplace' ? (
+          ) : (
             <motion.div
               key="marketplace"
               initial={{ opacity: 0, y: 10 }}
@@ -499,7 +488,7 @@ useEffect(() => {
                 onToggleWishlist={handleToggleWishlist}
                 onAddToCart={(product, event) => {
                   event.stopPropagation();
-                  handleAddToCart(product, 1);
+                  setActiveProduct(product);
                 }}
                 isInWishlist={isInWishlist}
                 initialSearchQuery={sharedSearchQuery}
@@ -508,91 +497,15 @@ useEffect(() => {
                 onCategoryChange={setSharedCategory}
               />
             </motion.div>
-          ) : currentTab === 'sell' ? (
-            <motion.div
-              key="sell"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <SellPage />
-            </motion.div>
-          ) : currentTab === 'wishlist' ? (
-            <motion.div
-              key="wishlist"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <WishlistPage
-                wishlist={wishlist}
-                products={products}
-                onToggleWishlist={handleToggleWishlist}
-                onAddToCart={(product, quantity) => {
-                  handleAddToCart(product, quantity);
-                  setCurrentTab('checkout');
-                }}
-                onBackToCollection={() => setCurrentTab('marketplace')}
-              />
-            </motion.div>
-          ) : currentTab === 'dashboard' ? (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Dashboard
-                currentUser={currentUser}
-                onUpdateUser={handleUpdateUser}
-                reservations={mergedReservations}
-                onUpdateReservation={handleUpdateReservation}
-                wishlist={wishlist}
-                products={products}
-                onToggleWishlist={handleToggleWishlist}
-                onAddToCart={handleAddToCart}
-                onLogout={handleLogout}
-                onOpenAuth={() => {
-                  setPendingAction(null);
-                  setIsAuthOpen(true);
-                }}
-                setCurrentTab={setCurrentTab}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="checkout"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <CheckoutPage
-                products={products}
-                cartItems={cartItems}
-                onUpdateQuantity={handleUpdateCartQuantity}
-                onRemoveItem={handleRemoveCartItem}
-                onClearCart={handleClearCart}
-                onAddReservation={handleAddReservation}
-                currentUser={currentUser}
-                onOpenAuth={() => {
-                  setPendingAction({ type: 'checkout' });
-                  setIsAuthOpen(true);
-                }}
-                onContinueShopping={() => setCurrentTab('marketplace')}
-              />
-            </motion.div>
           )}
         </AnimatePresence>
       </main>
 
       <Footer
-        setCurrentTab={setCurrentTab}
-        onOpenBecomeSeller={() => setCurrentTab('sell')}
-        onResetLocalSession={handleResetLocalSession}
+        setCurrentTab={(tab) => {
+          setCurrentTab(tab);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
 
       <AnimatePresence>
