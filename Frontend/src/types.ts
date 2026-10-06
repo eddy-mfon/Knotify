@@ -183,29 +183,6 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
   // ── CORPORATE TIES ──────────────────────────────────────────────────────────
   {
-    id: 'corp-blue-floral',
-    name: 'Blue Floral Corporate Tie',
-    seller: 'Knotify Official',
-    sellerRating: 4.9,
-    sellerHall: 'Admin Office',
-    originalPrice: 4000,
-    condition: 'Brand New',
-    category: 'Corporate',
-    color: 'Navy',
-    stock: 30,
-    description: 'A refined navy blue floral-patterned corporate tie. Crisp, professional and chapel-compliant — ideal for formal lectures, executive presentations and Sunday chapel services.',
-    materials: '100% woven polyester with fine floral jacquard weave, smooth matte finish, stay-knot interlining.',
-    pickupProcess: 'Reserve with a N1,500 deposit. Collect from our designated pickup point at your hall lobby upon resumption and pay the outstanding balance.',
-    image: 'https://vncevwdwuvmwymisxfhh.supabase.co/storage/v1/object/sign/KnotifyTies/corporateTies/Blue%20Floral%20Corporate%20Tie.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9jMGY3ZjVmYy04MTZlLTRlMmMtYWU4Ni00Zjk1ZTA3ZWY0OWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJLbm90aWZ5VGllcy9jb3Jwb3JhdGVUaWVzL0JsdWUgRmxvcmFsIENvcnBvcmF0ZSBUaWUuanBnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4NTE5NjIwNSwiZXhwIjoxODE2NzMyMjA1fQ.FzMxj2yKtzPL4g-h1LH9X49vEABVsClYtRswvreUrfc',
-    rating: 4.8,
-    reviewsCount: 42,
-    isFeatured: true,
-    reviews: [
-      { id: 'r-cf1', author: 'Emmanuel A.', rating: 5, date: '2026-06-10', comment: 'Very smart looking. The floral pattern is subtle and elegant — perfect for chapel.' },
-      { id: 'r-cf2', author: 'Grace O.', rating: 5, date: '2026-06-08', comment: 'Great quality. Ordered for my brother and it fits perfectly.' }
-    ]
-  },
-  {
     id: 'corp-blue-logo',
     name: 'Blue Logo Corporate Tie',
     seller: 'Knotify Official',

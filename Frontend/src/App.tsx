@@ -90,7 +90,7 @@ export default function App() {
   const [sharedSearchQuery, setSharedSearchQuery] = useState('');
   const [sharedCategory, setSharedCategory] = useState('All');
   const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('cu_marketplace_products_v4');
+    const saved = localStorage.getItem('cu_marketplace_products_v5');
     return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
   });
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -270,7 +270,7 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('cu_marketplace_products_v4', JSON.stringify(products));
+    localStorage.setItem('cu_marketplace_products_v5', JSON.stringify(products));
   }, [products]);
 
   useEffect(() => {
