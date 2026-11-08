@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
+import Lenis from 'lenis';
 
 import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
@@ -125,10 +126,35 @@ export default function App() {
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false);
 
-useEffect(() => {
-        const handleAuthExpired = () => {
-          setCurrentUser(null);
-        }
+  // Initialize Lenis smooth scrolling
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    });
+
+    let animationFrameId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      animationFrameId = requestAnimationFrame(raf);
+    }
+    animationFrameId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      lenis.destroy();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setCurrentUser(null);
+    };
         
         window.addEventListener("auth-expired", handleAuthExpired);
 
