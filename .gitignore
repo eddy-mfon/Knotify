@@ -15,3 +15,9 @@ coverage/
 *.vscode
 
 sql/
+conv.py* 
+*scripts/
+STUDY_GUIDE.md
+MASTER_PROMPT.md
+Backend/CodeFix.md
+request_models_usage.md

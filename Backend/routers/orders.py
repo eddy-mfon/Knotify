@@ -5,12 +5,21 @@ import httpx
 from datetime import datetime, timedelta, timezone
 
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Header
 
 from schemas import UserReviews
 from database import supabase
 from config import settings
-from routers.quantity import compute_order_total, disount_logic, get_tie_by_id, reserve_inventory
+from pricing import DELIVERY_FEE, UPDATES_FEE
+from routers.quantity import (
+    compute_order_total,
+    disount_logic,
+    get_tie_by_id,
+    release_inventory_hold,
+    release_superseded_holds,
+    reserve_inventory,
+)
+from utils.ratelimit import pay_rate_limit
 
 from typing import Optional, List, Any
 from dependencies import get_optional_current_user, get_current_user
@@ -25,8 +34,12 @@ NON_PURCHASABLE_TIE_IDS = {"corp-blue-floral"}
 @router.post("/pay")
 async def initialize_payment(
     payload: OrderCreateRequest,
+    request: Request,
     current_user: Optional[dict] = Depends(get_optional_current_user),
 ):
+    # Each hit inserts an order row AND takes a 10-minute inventory hold, so
+    # this endpoint is free resource exhaustion without a cap.
+    pay_rate_limit(request)
     try:
         tx_ref = generate_tx_ref("order")
         normalized_items = []
@@ -69,13 +82,13 @@ async def initialize_payment(
                 }
             )
 
-        # Add delivery fee of 250 on the server so the frontend cannot alter it.
-        calculated_total = server_items_total + 250
         # Determine valid user_id UUID from authenticated session or lookup/auto-create guest user in Supabase
         user_id = current_user.get("id") if current_user else None
 
         if not user_id:
-            cleaned_email = payload.email.strip().lower()
+            # Guest checkout: email is required by the schema, so a users row can
+            # always be created or matched for the foreign key.
+            cleaned_email = str(payload.email).strip().lower()
             existing_user = supabase.table("users").select("id").eq("email", cleaned_email).limit(1).execute()
             if existing_user.data and len(existing_user.data) > 0:
                 user_id = existing_user.data[0]["id"]
@@ -100,6 +113,11 @@ async def initialize_payment(
                 else:
                     user_id = guest_uuid
 
+        # Every add-on is priced HERE, server-side, so the amount charged always
+        # equals the amount shown at checkout. The client `amount` is never used.
+        updates_fee = UPDATES_FEE if payload.email_updates else 0.0
+        calculated_total = server_items_total + DELIVERY_FEE + updates_fee
+
         db_payload = {
             "user_id": user_id,
             "buyer_name": payload.name.strip(),
@@ -109,11 +127,12 @@ async def initialize_payment(
             "items_total": server_items_total,
             "item_count": len(payload.items),
             "currency": "NGN",
-            "order_details": payload.order_summary,
+            "order_details": payload.order_summary
+            + (f" | Updates: email/Telegram (+NGN {UPDATES_FEE:.0f})" if updates_fee else ""),
             "cart_snapshot": normalized_items,
             "delivery_address": payload.address,
             "room_number": payload.roomNumber,
-            "email_snapshot": payload.email,
+            "email_snapshot": str(payload.email),
             "phone_snapshot": payload.telegramPhone,
             "parentsNumber":payload.parentsNumber
         }
@@ -122,6 +141,11 @@ async def initialize_payment(
         print("Attempting to insert into Supabase..")
         order_insert = supabase.table("orders").insert(db_payload).execute()
         print(f"Order inserted: tx_ref={tx_ref}, rows={len(order_insert.data or [])}")
+
+        # A cancelled or abandoned earlier attempt leaves a 10-minute hold on
+        # these same ties. It belongs to this buyer, so drop it first: the
+        # newest attempt wins instead of failing with "no longer available".
+        release_superseded_holds(user_id, tx_ref)
 
         try:
             reserve_inventory(tx_ref, normalized_items)
@@ -162,7 +186,7 @@ async def initialize_payment(
             "customer":{
                 "name": payload.name,
                 "phone_number": payload.telegramPhone,
-                "email":payload.email
+                "email": str(payload.email),
             },
             "meta":{
                 "user_id": user_id or "guest",
@@ -175,16 +199,40 @@ async def initialize_payment(
             "payment_options":"card, ussd, banktransfer, opay",
             "customizations":{
                 "title":"KnotifyCu",
-                "description": f"Ties NGN {server_items_total:.2f} | Delivery Fee: NGN 250"
+                "description": f"Ties NGN {server_items_total:.2f} | Delivery: NGN {DELIVERY_FEE:.0f}"
+                + (f" | Updates: NGN {updates_fee:.0f}" if updates_fee else "")
             }
         }
 
         #Ask flutterwave for the checkout link
         print("Reaching out to Flutterwave..")
         async with httpx.AsyncClient() as client:
-            response = await client.post(flutterwave_api_url, json=flutter_payload, headers=headers)
-            print(response.json())
-            flw_data = response.json()
+            try:
+                response = await client.post(flutterwave_api_url, json=flutter_payload, headers=headers)
+            except httpx.RequestError as error:
+                # DNS or connection failure: Windows errno 11001
+                # ("getaddrinfo failed"), a timeout, or a TLS handshake problem.
+                # The order row and its 10-minute inventory holds already exist,
+                # so release them and mark the attempt failed instead of leaving
+                # a pending order pointing at a checkout page that never came.
+                print(f"Flutterwave unreachable ({flutterwave_api_url}): {error!r}")
+                try:
+                    release_inventory_hold(tx_ref)
+                except Exception as release_error:  # pragma: no cover
+                    print(f"Could not release holds for {tx_ref}: {release_error}")
+                supabase.table("orders").update({"status": "failed"}).eq("tx_ref", tx_ref).execute()
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=(
+                        "We could not reach the payment gateway. Nothing was charged — "
+                        "check your connection and try again."
+                    ),
+                ) from error
+
+            # A non-JSON error body (gateway maintenance page, WAF block) must
+            # not turn into an unhandled JSONDecodeError -> opaque 500.
+            flw_data = response.json() if response.content else {}
+            print(f"Flutterwave response {response.status_code}: {flw_data}")
 
             if response.status_code == 200 and flw_data.get("status") == "success":
                 hosted_checkout_url = flw_data.get("data",{}).get("link")
@@ -192,10 +240,13 @@ async def initialize_payment(
                 return {"checkout_url": hosted_checkout_url, "tx_ref": tx_ref, "order": order_insert.data[0] if order_insert.data else db_payload}
 
             else:
-                print(f"Flutterwave rejected request with status {response.status_code}")
+                gateway_message = flw_data.get("message") or "the payment gateway rejected the request"
+                print(f"Flutterwave rejected request with status {response.status_code}: {gateway_message}")
+                # 502: the failure is upstream, not a bug in this app, and the
+                # client can safely retry.
                 raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Gateway Error {flw_data.get("message")}"
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"Gateway error: {gateway_message}",
                 )
 
     except HTTPException:
@@ -206,9 +257,12 @@ async def initialize_payment(
         traceback.print_exc()
         print("!!!!!!!!!!!!!!!!!!!!!!!! \n")
 
+        # Never echo driver/DB internals back to the client: exception text
+        # can carry table names, connection strings and SQL fragments. The
+        # traceback above stays in the server log where it belongs.
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Crash details: {str(e)}"
+            detail="We could not start your checkout. Please try again."
         )
 
 # ---- helpers

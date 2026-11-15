@@ -9,7 +9,11 @@ import hmac
 from database import supabase
 from config import settings
 from datetime import timezone, datetime
-from routers.quantity import consume_inventory_hold, decrement_stock_for_order, release_inventory_hold
+from routers.quantity import (
+    consume_inventory_hold,
+    decrement_stock_for_order,
+    release_inventory_hold,
+)
 
 
 router = APIRouter(prefix="/webhook", tags=["Third Party Web Hooks"])
@@ -151,11 +155,47 @@ async def flutterwave_webhook(
 async def handle_telegram_requests(
     request:Request
 ):
+    # Anyone who discovers this URL can otherwise POST fake updates to your
+    # bot. Telegram sends the setWebhook secret_token back on every update.
+    #
+    # MUST-FIX: fail CLOSED. If no secret is configured, every update would be
+    # trusted, so anyone who finds the URL could drive the bot (send deep
+    # links, flip records) as if they were Telegram.
+    expected_secret = (settings.TELEGRAM_WEBHOOK_SECRET or "").strip()
+    if not expected_secret:
+        print("telegram webhook rejected: TELEGRAM_WEBHOOK_SECRET is not configured")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Webhook is not configured",
+        )
+
+    received_secret = (request.headers.get("X-Telegram-Bot-Api-Secret-Token") or "").strip()
+    if not hmac.compare_digest(received_secret, expected_secret):
+        print("telegram webhook rejected: missing/invalid secret token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized",
+        )
+
     payload = await request.json()
     if "message" in payload and "text" in payload["message"]:
         chat_id = payload["message"]["chat"]["id"]
-        incoming_text = payload["message"]["text"].strip().lower()
-        
+        raw_text = str(payload["message"]["text"] or "").strip()
+        incoming_text = raw_text.lower()
+
+        # Pic requests are off on this branch, so /start just greets the user.
+        # (Feature C used to resolve t.me?start=pic_<token> here, which required
+        # the pic_requests table and 500'd whenever that table was missing.)
+        if incoming_text.startswith("/start"):
+            reply_text = "Welcome to Knotify. Browse ties at the shop to find your knot."
+
+            if reply_text:
+                telegram_api_url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"
+                reply_payload = {"chat_id": chat_id, "text": reply_text}
+                async with httpx.AsyncClient() as client:
+                    await client.post(telegram_api_url, json=reply_payload, timeout=15.0)
+                return {"status": "okay"}
+
         final_report = "" # Default empty string
         
         # /today returns today's paid orders.
